@@ -404,6 +404,8 @@ export default function App() {
 
   useEffect(() => {
     localStorage.setItem(themeKey, dark ? 'dark' : 'light')
+    document.documentElement.classList.toggle('theme-dark', dark)
+    document.body.classList.toggle('theme-dark', dark)
     document.body.classList.toggle('settings-theme-dark', dark)
   }, [dark])
 
