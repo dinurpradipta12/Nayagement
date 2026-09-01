@@ -20,6 +20,7 @@ import { ProjectDetailPage } from './pages/ProjectDetailPage'
 import { ProjectsPage } from './pages/ProjectsPage'
 import { PublicConsultationBookingPage, PublicInvoicePage, PublicOrderFormPage, PublicProjectPage, PublicProjectUnavailablePage } from './pages/PublicPages'
 import { PersonalFinancePage } from './pages/PersonalFinancePage'
+import { ContentPlanPage } from './pages/ContentPlanPage'
 import { TasksPage } from './pages/TasksPage'
 import type { PublicProjectLookup } from './services/publicData'
 import { isSupabaseConfigured, loginWithUsername } from './services/usernameAuth'
@@ -67,7 +68,7 @@ import type { AppNotification, Client, ClientFormData, ClientProfileFormData, Co
 
 const demoSessionKey = 'nayagement-demo-session'
 const themeKey = 'nayagement-theme'
-const routeNames: RouteName[] = ['dashboard', 'projects', 'tasks', 'calendar', 'clients', 'finance', 'invoices', 'forms', 'orders', 'bookings', 'personal-finance', 'notifications', 'settings']
+const routeNames: RouteName[] = ['dashboard', 'projects', 'tasks', 'calendar', 'clients', 'content-plan', 'finance', 'invoices', 'forms', 'orders', 'bookings', 'personal-finance', 'notifications', 'settings']
 const initialTimelines: Record<string, TimelineItem[]> = { 'p-aurora': auroraTimeline }
 const accentOptions: Project['accent'][] = ['blue', 'violet', 'peach', 'mint', 'pink']
 
@@ -1297,6 +1298,9 @@ export default function App() {
       break
     case 'personal-finance':
       page = <PersonalFinancePage workspaceId={workspaceId} businessPayments={payments} onToast={notify} />
+      break
+    case 'content-plan':
+      page = <ContentPlanPage workspaceId={workspaceId} clients={clients} onToast={notify} />
       break
     case 'invoices':
       page = <InvoicesPage invoices={invoices} clients={clients} projects={projects} initialInvoiceId={invoiceDetailId} downloadOnOpen={invoiceDetailAction === 'pdf'} onToast={notify} onLoadInvoice={loadInvoiceEditor} onSaveInvoice={saveInvoiceEditor} onUpdateInvoiceStatus={saveInvoiceStatus} serviceCatalogs={serviceCatalogs} serviceQuotes={serviceQuotes} onLoadServiceQuoteData={loadServiceQuoteData} onSaveServiceCatalog={saveServiceCatalog} onDeleteServiceCatalog={deleteServiceCatalog} onSaveServiceQuote={saveServiceQuote} onDeleteServiceQuote={deleteServiceQuote} onMarkServiceQuoteConverted={markServiceQuoteConverted} />

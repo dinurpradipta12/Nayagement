@@ -20,6 +20,7 @@ import {
   PiggyBank,
   Search,
   Settings,
+  Sheet,
   Sun,
   UsersRound,
   X,
@@ -33,6 +34,7 @@ const navigation: Array<{ id: RouteName; label: string; icon: typeof LayoutDashb
   { id: 'tasks', label: 'Tasks', icon: ListTodo },
   { id: 'calendar', label: 'Calendar', icon: CalendarDays },
   { id: 'clients', label: 'Clients', icon: UsersRound },
+  { id: 'content-plan', label: 'Content Plan & Sheets', icon: Sheet },
   { id: 'finance', label: 'Finance', icon: CircleDollarSign },
   { id: 'invoices', label: 'Invoices', icon: FileText },
   { id: 'forms', label: 'Order Forms', icon: ClipboardList },
@@ -44,10 +46,10 @@ const navigation: Array<{ id: RouteName; label: string; icon: typeof LayoutDashb
 ]
 
 const mobileNavigation = navigation.slice(0, 4)
-const workspaceNavigation = navigation.slice(0, 5)
-const businessNavigation = navigation.slice(5, 10)
-const personalNavigation = navigation.slice(10, 11)
-const utilityNavigation = navigation.slice(11)
+const workspaceNavigation = navigation.slice(0, 6)
+const businessNavigation = navigation.slice(6, 11)
+const personalNavigation = navigation.slice(11, 12)
+const utilityNavigation = navigation.slice(12)
 
 interface WorkspaceLayoutProps {
   route: RouteName

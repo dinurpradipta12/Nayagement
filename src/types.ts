@@ -297,6 +297,37 @@ export interface ClientProfileFormData extends ClientFormData {
   description: string
 }
 
+export type ContentPlanPlatform =
+  | 'Instagram & TikTok'
+  | 'Instagram Reels'
+  | 'LinkedIn & Article'
+  | 'All Social Channels'
+
+export interface ContentPlanSheet {
+  id: string
+  workspaceId: string
+  clientId?: string
+  clientName: string
+  title: string
+  sheetUrl: string
+  embedUrl: string
+  platform: ContentPlanPlatform
+  status: 'active' | 'archived'
+  logoUrl?: string
+  createdBy: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ContentPlanSheetInput {
+  clientId?: string
+  clientName: string
+  title: string
+  sheetUrl: string
+  platform: ContentPlanPlatform
+  logoUrl?: string
+}
+
 export interface TimelineItem {
   id?: string
   title: string
@@ -541,6 +572,7 @@ export type RouteName =
   | 'tasks'
   | 'calendar'
   | 'clients'
+  | 'content-plan'
   | 'finance'
   | 'personal-finance'
   | 'invoices'
