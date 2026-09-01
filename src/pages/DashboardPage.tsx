@@ -11,7 +11,6 @@ import {
   Clock3,
   FolderKanban,
   Plus,
-  Sparkles,
   Target,
   TrendingUp,
 } from 'lucide-react'
@@ -200,8 +199,8 @@ export function DashboardPage({
     <div className="dashboard-page">
       <section className="dashboard-hero">
         <div>
-          <p className="eyebrow"><Sparkles size={14} /> {todayLabel}</p>
-          <h1>Halo, {userName || 'Anda'} <span>✦</span></h1>
+          <p className="eyebrow">{todayLabel}</p>
+          <h1>Halo, {userName || 'Anda'}</h1>
           <p className="hero-description">{attentionCount ? `${attentionCount} hal perlu perhatian hari ini.` : 'Tidak ada hal mendesak hari ini.'} Mari selesaikan dengan tenang.</p>
         </div>
         <div className="hero-actions">
