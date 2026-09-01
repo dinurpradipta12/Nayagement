@@ -3,8 +3,31 @@ import { ArrowUpRight, ChevronDown, Clock3, FileText, Filter, FolderPlus, Grid2X
 import type { Project, ProjectStatus } from '../types'
 import { deadlineLabel, rupiah } from '../lib/format'
 import { Avatar, PriorityDot, ProgressBar, StatusChip } from '../components/ui'
+import brandingIcon from '../projects-icon/branding.png'
+import consultingIcon from '../projects-icon/consulting.png'
+import contentIcon from '../projects-icon/content.png'
+import customSheetsIcon from '../projects-icon/custom-sheets.png'
+import socialMediaIcon from '../projects-icon/social-media.png'
+import websiteIcon from '../projects-icon/website.png'
 
 const statusOptions: Array<'All' | ProjectStatus> = ['All', 'Inquiry', 'Confirmed', 'In Progress', 'Review', 'Completed']
+
+function projectIcon(type: string) {
+  const normalizedType = type.trim().toLocaleLowerCase()
+
+  if (normalizedType.includes('spreadsheet') || normalizedType.includes('sheet')) return customSheetsIcon
+  if (normalizedType.includes('social')) return socialMediaIcon
+  if (normalizedType.includes('website') || normalizedType === 'web') return websiteIcon
+  if (normalizedType.includes('consult')) return consultingIcon
+  if (normalizedType.includes('brand')) return brandingIcon
+  if (normalizedType.includes('content') || normalizedType.includes('presentation')) return contentIcon
+
+  return contentIcon
+}
+
+function ProjectTypeIcon({ type }: { type: string }) {
+  return <span className="project-type-icon project-type-image" aria-hidden="true"><img src={projectIcon(type)} alt="" /></span>
+}
 
 interface ProjectsPageProps {
   projects: Project[]
@@ -69,7 +92,7 @@ export function ProjectsPage({ projects, onOpenProject, onOpenOrderForms, onView
           const hasPublicPortal = Boolean(project.publicSlug || project.publicCode || project.publicToken)
           if (view === 'list') return (
             <article key={project.id} className="project-list-item">
-              <span className={`project-type-icon project-type-${project.accent}`}>{project.type.slice(0, 1)}</span>
+              <ProjectTypeIcon type={project.type} />
               <button className="project-list-main" onClick={() => onViewProject(project)}>
                 <span><small>{project.code} · {project.type}</small><strong>{project.name}</strong></span>
                 <span className="project-list-client"><Avatar initials={project.client.split(' ').map((word) => word[0]).join('').slice(0, 2)} variant={project.accent} size="sm" /> {project.client}</span>
@@ -82,7 +105,7 @@ export function ProjectsPage({ projects, onOpenProject, onOpenOrderForms, onView
           return (
             <article key={project.id} className={`project-card project-card-${project.accent}`}>
               <div className="project-card-top">
-                <span className={`project-type-icon project-type-${project.accent}`}>{project.type.slice(0, 1)}</span>
+                <ProjectTypeIcon type={project.type} />
                 <div className="project-card-actions">
                   <PriorityDot priority={project.priority} />
                   <button className="card-action-button" onClick={() => onEditProject(project)} aria-label={`Edit ${project.name}`} title="Edit proyek"><Pencil size={14} /></button>
