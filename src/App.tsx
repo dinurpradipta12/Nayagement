@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { WorkspaceLayout } from './components/WorkspaceLayout'
+import { AppUpdatePrompt } from './components/AppUpdatePrompt'
 import { ProjectFormModal } from './components/ProjectFormModal'
 import { SearchModal } from './components/SearchModal'
 import { Toast } from './components/ui'
@@ -272,6 +273,7 @@ export default function App() {
     message: sanitizeUserMessage(message),
     action: action ? sanitizeUserMessage(action, '') : undefined,
   }), [])
+  const notifyAppUpdated = useCallback(() => notify('Aplikasi berhasil diperbarui ke versi terbaru.'), [notify])
 
   const loadWorkspace = useCallback(async (silent = false) => {
     if (!isSupabaseConfigured) return
@@ -1438,6 +1440,7 @@ export default function App() {
       </WorkspaceLayout>
       {projectFormOpen && <ProjectFormModal project={editingProject} onClose={() => { setProjectFormOpen(false); setEditingProject(null) }} onSubmit={saveProjectForm} />}
       {searchOpen && <SearchModal projects={projects} clients={clients} onClose={() => setSearchOpen(false)} onOpenProject={(project) => { setSearchOpen(false); openProjectDetail(project) }} onOpenRoute={(next) => { setSearchOpen(false); navigate(next) }} />}
+      <AppUpdatePrompt onUpdated={notifyAppUpdated} />
       {toast && <Toast key={toast.id} message={toast.message} action={toast.action} onDismiss={() => setToast(null)} />}
     </div>
   )
