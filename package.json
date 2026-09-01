@@ -1,0 +1,29 @@
+{
+  "name": "nayagement",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "tsc --noEmit",
+    "seed:supabase": "node --env-file=supabase/.env.local scripts/seed-supabase.mjs",
+    "clear:demo": "node --env-file=supabase/.env.local scripts/clear-supabase-demo.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.112.4",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.1"
+  }
+}
