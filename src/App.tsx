@@ -31,6 +31,7 @@ import {
   createWorkspaceTaskNote,
   createWorkspaceTask,
   createWorkspaceTimelineActivity,
+  deleteWorkspaceClient,
   deleteWorkspaceTaskAttachment,
   deleteWorkspaceOrderSubmission,
   deleteWorkspaceProject,
@@ -59,6 +60,7 @@ import {
   updateWorkspaceInvoiceStatus,
   updateWorkspaceTaskDetail,
   updateWorkspaceTaskStatus,
+  updateWorkspaceTimelineActivity,
   uploadWorkspaceClientLogo,
   uploadWorkspaceInvoiceLogo,
   uploadWorkspaceInvoiceSignature,
@@ -634,6 +636,25 @@ export default function App() {
     notify('Profil klien diperbarui.')
   }
 
+  const deleteClient = async (client: Client) => {
+    if (!window.confirm(`Hapus klien "${client.company || client.name}"? Proyek dan invoice yang pernah terhubung tetap tersimpan tanpa relasi klien.`)) return
+    try {
+      if (isSupabaseConfigured) {
+        if (!workspaceId) throw new Error('Workspace belum siap. Silakan coba lagi sesaat.')
+        await deleteWorkspaceClient(workspaceId, client.id)
+      }
+      setClients((current) => current.filter((item) => item.id !== client.id))
+      setProjects((current) => current.map((project) => project.clientId === client.id
+        ? { ...project, clientId: undefined, client: 'Tanpa klien' }
+        : project))
+      if (routeDetailId(getHash(), 'clients') === client.id) navigate('clients')
+      if (isSupabaseConfigured) void loadWorkspace()
+      notify('Klien berhasil dihapus.')
+    } catch (error) {
+      notify(error instanceof Error ? sanitizeUserMessage(error.message) : 'Klien tidak dapat dihapus.')
+    }
+  }
+
   const saveProjectForm = async (data: ProjectFormData) => {
     if (!editingProject) {
       await createProject(data)
@@ -1157,14 +1178,14 @@ export default function App() {
     }
   }
 
-  const addProjectActivity = async (project: Project, input: { title: string; description?: string; visibleToClient: boolean }) => {
+  const addProjectActivity = async (project: Project, input: { title: string; description?: string; visibleToClient: boolean; occurredAt?: string }) => {
     if (isSupabaseConfigured) {
       if (!workspaceId) throw new Error('Workspace belum siap. Silakan coba lagi sesaat.')
       const activity = await createWorkspaceTimelineActivity(workspaceId, { projectId: project.id, ...input })
       setTimelines((current) => ({ ...current, [project.id]: [...(current[project.id] ?? []), activity] }))
       void loadWorkspace()
     } else {
-      const now = new Date()
+      const now = input.occurredAt ? new Date(input.occurredAt) : new Date()
       const activity: TimelineItem = {
         id: 'activity-' + Date.now(),
         title: input.title,
@@ -1178,6 +1199,32 @@ export default function App() {
       setTimelines((current) => ({ ...current, [project.id]: [...(current[project.id] ?? []), activity] }))
     }
     notify(input.visibleToClient ? 'Aktivitas disimpan dan terlihat di portal klien.' : 'Aktivitas internal disimpan.')
+  }
+
+  const updateProjectActivity = async (project: Project, item: TimelineItem, input: { title: string; description?: string; visibleToClient: boolean; occurredAt?: string }) => {
+    if (!item.id) return
+    if (isSupabaseConfigured) {
+      if (!workspaceId) throw new Error('Workspace belum siap. Silakan coba lagi sesaat.')
+      const activity = await updateWorkspaceTimelineActivity(workspaceId, item.id, { projectId: project.id, ...input })
+      setTimelines((current) => ({
+        ...current,
+        [project.id]: (current[project.id] ?? []).map((entry) => entry.id === item.id ? activity : entry),
+      }))
+      void loadWorkspace()
+    } else {
+      const occurredAt = input.occurredAt ? new Date(input.occurredAt) : new Date(item.occurredAt ?? Date.now())
+      const activity: TimelineItem = {
+        ...item,
+        title: input.title,
+        description: input.description || 'Pembaruan proyek.',
+        occurredAt: occurredAt.toISOString(),
+        date: new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short' }).format(occurredAt),
+        time: new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit' }).format(occurredAt).replace('.', ':'),
+        visibleToClient: input.visibleToClient,
+      }
+      setTimelines((current) => ({ ...current, [project.id]: (current[project.id] ?? []).map((entry) => entry.id === item.id ? activity : entry) }))
+    }
+    notify('Aktivitas proyek diperbarui.')
   }
 
   const deleteProjectActivity = async (project: Project, item: TimelineItem) => {
@@ -1255,6 +1302,7 @@ export default function App() {
           onToggleTask={(task, status) => toggleProjectTask(task, status)}
           onDeleteTask={(task) => deleteProjectTask(task)}
           onAddActivity={(input) => addProjectActivity(project, input)}
+          onUpdateActivity={(item, input) => updateProjectActivity(project, item, input)}
           onDeleteActivity={(item) => deleteProjectActivity(project, item)}
         />
       } else {
@@ -1266,6 +1314,7 @@ export default function App() {
       page = <CalendarPage
         projects={projects}
         tasks={tasks}
+        timelines={timelines}
         consultationBookings={consultationBookings}
         onCreateProject={openProjectForm}
         onOpenProject={(projectId) => {
@@ -1292,7 +1341,7 @@ export default function App() {
       const client = clientDetailId ? clients.find((item) => item.id === clientDetailId) : null
       page = client
         ? <ClientProfilePage client={client} projects={projects} onBack={() => navigateToHash('/clients', 'clients')} onOpenProject={openProjectDetail} onSaveProfile={(data, logoFile) => saveClientProfile(client, data, logoFile)} />
-        : <ClientsPage clients={clients} onOpenClient={openClientProfile} onCreateClient={createClient} />
+        : <ClientsPage clients={clients} onOpenClient={openClientProfile} onCreateClient={createClient} onUpdateClient={saveClientProfile} onDeleteClient={(client) => { void deleteClient(client) }} />
       break
     }
     case 'finance':

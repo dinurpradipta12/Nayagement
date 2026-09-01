@@ -124,6 +124,7 @@ grant execute on function public.queue_telegram_test(uuid) to authenticated;
 create or replace function public.enqueue_notification_for_telegram()
 returns trigger
 language plpgsql
+security definer
 set search_path = public
 as $enqueue_notification_for_telegram$
 declare
@@ -170,6 +171,8 @@ begin
   return new;
 end;
 $enqueue_notification_for_telegram$;
+
+revoke all on function public.enqueue_notification_for_telegram() from public, anon, authenticated;
 
 drop trigger if exists notifications_enqueue_telegram on public.notifications;
 create trigger notifications_enqueue_telegram

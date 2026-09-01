@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { CalendarDays, ChevronLeft, ChevronRight, Clock3, ListTodo, Plus } from 'lucide-react'
 import { TaskDetailDrawer } from '../components/TaskDetailDrawer'
-import type { ConsultationBooking, Project, Task, TaskAttachment, TaskDetailInput } from '../types'
+import type { ConsultationBooking, Project, Task, TaskAttachment, TaskDetailInput, TimelineItem } from '../types'
 
 type CalendarView = 'month' | 'week' | 'day'
 
@@ -11,6 +11,7 @@ interface CalendarTaskEvent {
   dateKey: string
   project?: Project
   consultationBooking?: ConsultationBooking
+  timelineItem?: TimelineItem
 }
 
 const weekdays = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']
@@ -63,7 +64,7 @@ function taskDate(task: Task) {
 }
 
 function eventAccent(event: CalendarTaskEvent) {
-  return event.consultationBooking ? 'violet' : event.project?.accent ?? 'blue'
+  return event.consultationBooking ? 'violet' : event.timelineItem ? 'mint' : event.project?.accent ?? 'blue'
 }
 
 function monthCells(value: Date) {
@@ -85,6 +86,7 @@ function rangeLabel(start: Date, end: Date) {
 interface CalendarPageProps {
   projects: Project[]
   tasks: Task[]
+  timelines: Record<string, TimelineItem[]>
   consultationBookings: ConsultationBooking[]
   onCreateProject: () => void
   onOpenProject: (projectId: string) => void
@@ -96,7 +98,7 @@ interface CalendarPageProps {
   onDeleteTaskAttachment: (task: Task, attachment: TaskAttachment) => Promise<void>
 }
 
-export function CalendarPage({ projects, tasks, consultationBookings, onCreateProject, onOpenProject, onOpenConsultations, onLoadTaskDetail, onSaveTaskDetail, onAddTaskNote, onUploadTaskAttachment, onDeleteTaskAttachment }: CalendarPageProps) {
+export function CalendarPage({ projects, tasks, timelines, consultationBookings, onCreateProject, onOpenProject, onOpenConsultations, onLoadTaskDetail, onSaveTaskDetail, onAddTaskNote, onUploadTaskAttachment, onDeleteTaskAttachment }: CalendarPageProps) {
   const today = useMemo(() => startOfDay(new Date()), [])
   const [cursor, setCursor] = useState(() => startOfDay(new Date()))
   const [view, setView] = useState<CalendarView>('month')
@@ -119,8 +121,29 @@ export function CalendarPage({ projects, tasks, consultationBookings, onCreatePr
       const task: Task = { id: `consultation-${booking.id}`, name: `Konsultasi: ${booking.name}`, project: 'Booking konsultasi', due: booking.startsAt, dueAt: booking.startsAt, description: booking.topic, status: booking.status === 'Completed' ? 'Completed' : booking.status === 'Confirmed' ? 'In Progress' : 'Todo', priority: 'Medium', visibleToClient: false }
       return [{ task, date, dateKey: dateKey(date), consultationBooking: booking }]
     })
-    return [...taskEvents, ...bookingEvents].sort((left, right) => left.date.getTime() - right.date.getTime())
-  }, [consultationBookings, projects, tasks])
+    const timelineEvents = Object.entries(timelines).flatMap(([projectId, items]) => {
+      const project = projects.find((item) => item.id === projectId)
+      return items.flatMap((item, index) => {
+        if (!item.occurredAt) return []
+        const date = new Date(item.occurredAt)
+        if (Number.isNaN(date.getTime())) return []
+        const task: Task = {
+          id: `timeline-${item.id ?? `${projectId}-${index}`}`,
+          projectId,
+          name: `Aktivitas: ${item.title}`,
+          project: project?.name ?? 'Proyek',
+          due: item.occurredAt,
+          dueAt: item.occurredAt,
+          description: item.description,
+          status: item.state === 'done' ? 'Completed' : 'In Progress',
+          priority: 'Low',
+          visibleToClient: item.visibleToClient,
+        }
+        return [{ task, date, dateKey: dateKey(date), project, timelineItem: item }]
+      })
+    })
+    return [...taskEvents, ...bookingEvents, ...timelineEvents].sort((left, right) => left.date.getTime() - right.date.getTime())
+  }, [consultationBookings, projects, tasks, timelines])
 
   const eventsByDate = useMemo(() => {
     const next = new Map<string, CalendarTaskEvent[]>()
@@ -212,9 +235,13 @@ export function CalendarPage({ projects, tasks, consultationBookings, onCreatePr
     setView('day')
   }
 
-  const openCalendarEvent = (event: CalendarTaskEvent) => event.consultationBooking ? onOpenConsultations() : void openTaskDetail(event.task)
+  const openCalendarEvent = (event: CalendarTaskEvent) => {
+    if (event.consultationBooking) onOpenConsultations()
+    else if (event.timelineItem && event.project) onOpenProject(event.project.id)
+    else void openTaskDetail(event.task)
+  }
   const renderTaskEvent = (event: CalendarTaskEvent, className = 'calendar-task-event') => (
-    <button key={event.task.id} type="button" className={`${className} event-${eventAccent(event)} ${event.task.status === 'Completed' ? 'is-completed' : ''}`} onClick={() => openCalendarEvent(event)} aria-label={event.consultationBooking ? `Buka booking konsultasi ${event.consultationBooking.name}` : `Buka detail task ${event.task.name}`}>
+    <button key={event.task.id} type="button" className={`${className} event-${eventAccent(event)} ${event.task.status === 'Completed' ? 'is-completed' : ''}`} onClick={() => openCalendarEvent(event)} aria-label={event.consultationBooking ? `Buka booking konsultasi ${event.consultationBooking.name}` : event.timelineItem ? `Buka aktivitas proyek ${event.timelineItem.title}` : `Buka detail task ${event.task.name}`}>
       <span>{formatTime(event.date)}</span>
       <strong>{event.task.name}</strong>
     </button>
@@ -223,7 +250,7 @@ export function CalendarPage({ projects, tasks, consultationBookings, onCreatePr
   return (
     <div className="module-page calendar-page">
       <section className="page-title-row">
-        <div><p className="eyebrow">Studio schedule</p><h1>Calendar</h1><p>Task berjadwal dari seluruh proyek, selalu mengikuti data workspace Anda.</p></div>
+        <div><p className="eyebrow">Studio schedule</p><h1>Calendar</h1><p>Task, aktivitas proyek, dan konsultasi terjadwal selalu mengikuti data workspace Anda.</p></div>
         <button className="primary-button" onClick={onCreateProject}><Plus size={18} /> Buat jadwal</button>
       </section>
 
@@ -242,7 +269,7 @@ export function CalendarPage({ projects, tasks, consultationBookings, onCreatePr
                 const outsideMonth = date.getMonth() !== cursor.getMonth()
                 return <div key={dateKey(date)} className={`calendar-day ${outsideMonth ? 'is-outside' : ''} ${sameDay(date, today) ? 'today' : ''} ${sameDay(date, cursor) ? 'is-selected' : ''}`}>
                   <button type="button" className="calendar-date-button" onClick={() => setCursor(startOfDay(date))} aria-label={`Pilih ${titleCase(longDateFormatter.format(date))}`}><span>{date.getDate()}</span></button>
-                  <div className="calendar-day-events">{events.slice(0, 2).map((event) => renderTaskEvent(event))}{events.length > 2 && <button type="button" className="calendar-more-events" onClick={() => openDay(date)}>+{events.length - 2} task lainnya</button>}</div>
+                  <div className="calendar-day-events">{events.slice(0, 2).map((event) => renderTaskEvent(event))}{events.length > 2 && <button type="button" className="calendar-more-events" onClick={() => openDay(date)}>+{events.length - 2} agenda lainnya</button>}</div>
                 </div>
               })}
             </div>

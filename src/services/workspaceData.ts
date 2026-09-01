@@ -22,6 +22,7 @@ export interface ProjectTimelineInput {
   title: string
   description?: string
   visibleToClient: boolean
+  occurredAt?: string
 }
 
 export interface WorkspaceSnapshot {
@@ -1565,6 +1566,31 @@ export async function updateWorkspaceClientProfile(workspaceId: string, clientId
   return mapClient(data as unknown as ClientRow)
 }
 
+export async function deleteWorkspaceClient(workspaceId: string, clientId: string) {
+  const client = requireSupabase()
+  const { data: existing, error: readError } = await client
+    .from('clients')
+    .select('id, logo_path')
+    .eq('workspace_id', workspaceId)
+    .eq('id', clientId)
+    .maybeSingle()
+  throwIfError(readError)
+  if (!existing) throw new Error('Klien tidak ditemukan atau Anda tidak memiliki akses untuk menghapusnya.')
+
+  const { data, error } = await client
+    .from('clients')
+    .delete()
+    .eq('workspace_id', workspaceId)
+    .eq('id', clientId)
+    .select('id')
+  throwIfError(error)
+  if (!data?.length) throw new Error('Klien tidak ditemukan atau tidak dapat dihapus.')
+
+  if (typeof existing.logo_path === 'string' && existing.logo_path) {
+    await client.storage.from(clientLogoBucket).remove([existing.logo_path])
+  }
+}
+
 function settingsSetupError() {
   return new Error('Pengaturan akun belum disiapkan di database. Jalankan SQL pembaruan Settings terlebih dahulu.')
 }
@@ -2467,9 +2493,28 @@ export async function createWorkspaceTimelineActivity(workspaceId: string, input
       project_id: input.projectId,
       title: input.title,
       description: input.description || null,
-      occurred_at: new Date().toISOString(),
+      occurred_at: input.occurredAt ? new Date(input.occurredAt).toISOString() : new Date().toISOString(),
       visibility: input.visibleToClient ? 'client' : 'internal',
     })
+    .select('id, project_id, title, description, occurred_at, visibility')
+    .single()
+  throwIfError(error)
+  return mapTimelineItem(data as unknown as TimelineRow, 0, 1)
+}
+
+export async function updateWorkspaceTimelineActivity(workspaceId: string, activityId: string, input: ProjectTimelineInput) {
+  const client = requireSupabase()
+  const { data, error } = await client
+    .from('project_timeline')
+    .update({
+      title: input.title,
+      description: input.description || null,
+      occurred_at: input.occurredAt ? new Date(input.occurredAt).toISOString() : new Date().toISOString(),
+      visibility: input.visibleToClient ? 'client' : 'internal',
+    })
+    .eq('workspace_id', workspaceId)
+    .eq('project_id', input.projectId)
+    .eq('id', activityId)
     .select('id, project_id, title, description, occurred_at, visibility')
     .single()
   throwIfError(error)

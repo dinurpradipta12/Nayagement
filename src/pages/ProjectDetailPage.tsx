@@ -21,7 +21,8 @@ interface ProjectDetailPageProps {
   onAddTask: (input: { name: string; description?: string; dueAt?: string; priority: ProjectPriority; visibleToClient: boolean }) => Promise<void>
   onToggleTask: (task: Task, status: TaskStatus) => Promise<void>
   onDeleteTask: (task: Task) => Promise<void>
-  onAddActivity: (input: { title: string; description?: string; visibleToClient: boolean }) => Promise<void>
+  onAddActivity: (input: { title: string; description?: string; visibleToClient: boolean; occurredAt?: string }) => Promise<void>
+  onUpdateActivity: (item: TimelineItem, input: { title: string; description?: string; visibleToClient: boolean; occurredAt?: string }) => Promise<void>
   onDeleteActivity: (item: TimelineItem) => Promise<void>
 }
 
@@ -45,6 +46,7 @@ export function ProjectDetailPage({
   onToggleTask,
   onDeleteTask,
   onAddActivity,
+  onUpdateActivity,
   onDeleteActivity,
 }: ProjectDetailPageProps) {
   const projectTasks = tasks.filter((task) => task.projectId === project.id || (!task.projectId && task.project === project.name))
@@ -65,6 +67,8 @@ export function ProjectDetailPage({
   const [activityTitle, setActivityTitle] = useState('')
   const [activityDescription, setActivityDescription] = useState('')
   const [activityVisible, setActivityVisible] = useState(true)
+  const [activityOccurredAt, setActivityOccurredAt] = useState('')
+  const [editingActivity, setEditingActivity] = useState<TimelineItem | null>(null)
   const [formError, setFormError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
@@ -143,16 +147,38 @@ export function ProjectDetailPage({
     try {
       setSubmitting(true)
       setFormError('')
-      await onAddActivity({ title: activityTitle.trim(), description: activityDescription.trim() || undefined, visibleToClient: activityVisible })
+      const input = { title: activityTitle.trim(), description: activityDescription.trim() || undefined, visibleToClient: activityVisible, occurredAt: activityOccurredAt || undefined }
+      if (editingActivity) await onUpdateActivity(editingActivity, input)
+      else await onAddActivity(input)
       setActivityTitle('')
       setActivityDescription('')
       setActivityVisible(true)
+      setActivityOccurredAt('')
+      setEditingActivity(null)
       setShowActivityForm(false)
     } catch (error) {
       setFormError(error instanceof Error ? sanitizeUserMessage(error.message) : 'Aktivitas tidak dapat disimpan.')
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const openActivityEditor = (item?: TimelineItem) => {
+    setEditingActivity(item ?? null)
+    setActivityTitle(item?.title ?? '')
+    setActivityDescription(item?.description ?? '')
+    setActivityVisible(item?.visibleToClient ?? true)
+    const sourceDate = item?.occurredAt ? new Date(item.occurredAt) : new Date()
+    const timezoneOffset = sourceDate.getTimezoneOffset() * 60_000
+    setActivityOccurredAt(new Date(sourceDate.getTime() - timezoneOffset).toISOString().slice(0, 16))
+    setFormError('')
+    setShowActivityForm(true)
+  }
+
+  const closeActivityEditor = () => {
+    setShowActivityForm(false)
+    setEditingActivity(null)
+    setFormError('')
   }
 
   const portalActive = Boolean(project.publicSlug || project.publicCode || project.publicToken)
@@ -173,7 +199,7 @@ export function ProjectDetailPage({
         </div>
       </section>
 
-      <section className={'detail-hero detail-hero-' + project.accent}>
+      <section className="detail-hero detail-hero-fixed">
         <div className="detail-hero-main">
           <span className="detail-code">{project.code} · {project.type}</span>
           <h1>{project.name}</h1>
@@ -200,16 +226,17 @@ export function ProjectDetailPage({
           <section className="detail-section">
             <div className="detail-section-heading">
               <div><p className="eyebrow">Timeline</p><h2>Aktivitas proyek</h2></div>
-              <button className="soft-button" onClick={() => { setShowActivityForm((current) => !current); setFormError('') }}><Plus size={15} /> Update</button>
+              <button className="soft-button" onClick={() => showActivityForm ? closeActivityEditor() : openActivityEditor()}><Plus size={15} /> Update</button>
             </div>
             {showActivityForm && (
               <form className="project-inline-form" onSubmit={submitActivity}>
-                <div className="project-inline-form-heading"><strong>Tambah aktivitas</strong><button type="button" className="icon-button" aria-label="Tutup form aktivitas" onClick={() => setShowActivityForm(false)}><X size={16} /></button></div>
+                <div className="project-inline-form-heading"><strong>{editingActivity ? 'Edit aktivitas' : 'Tambah aktivitas'}</strong><button type="button" className="icon-button" aria-label="Tutup form aktivitas" onClick={closeActivityEditor}><X size={16} /></button></div>
                 <label>Judul aktivitas<input autoFocus value={activityTitle} onChange={(event) => setActivityTitle(event.target.value)} placeholder="Contoh: Konsep awal dikirim" /></label>
                 <label>Keterangan<textarea value={activityDescription} onChange={(event) => setActivityDescription(event.target.value)} rows={3} placeholder="Ringkasan pembaruan untuk tim atau klien..." /></label>
+                <label>Jadwal aktivitas<input type="datetime-local" value={activityOccurredAt} onChange={(event) => setActivityOccurredAt(event.target.value)} /><small>Aktivitas ini otomatis muncul di Calendar pada waktu tersebut.</small></label>
                 <label className="visibility-toggle"><input type="checkbox" checked={activityVisible} onChange={(event) => setActivityVisible(event.target.checked)} /> Tampilkan aktivitas ini di portal klien</label>
                 {formError && <p className="form-error">{formError}</p>}
-                <div><button type="button" className="secondary-button" onClick={() => setShowActivityForm(false)}>Batal</button><button className="primary-button" disabled={submitting}>{submitting ? 'Menyimpan…' : 'Simpan aktivitas'}</button></div>
+                <div><button type="button" className="secondary-button" onClick={closeActivityEditor}>Batal</button><button className="primary-button" disabled={submitting}>{submitting ? 'Menyimpan…' : editingActivity ? 'Simpan perubahan' : 'Simpan aktivitas'}</button></div>
               </form>
             )}
             <div className="timeline-list">
@@ -217,7 +244,7 @@ export function ProjectDetailPage({
                 <div key={item.id ?? item.title + item.date + item.time} className={'timeline-item timeline-' + item.state}>
                   <span className="timeline-marker" />
                   <div><strong>{item.title}</strong><p>{item.description}</p><small>{item.date} · {item.time} {item.visibleToClient ? '· Terlihat oleh klien' : '· Internal'}</small></div>
-                  {item.id && <button className="timeline-delete-button" onClick={() => { void onDeleteActivity(item) }} aria-label={'Hapus aktivitas ' + item.title} title="Hapus aktivitas"><Trash2 size={14} /></button>}
+                  {item.id && <span className="timeline-item-actions"><button className="timeline-edit-button" onClick={() => openActivityEditor(item)} aria-label={'Edit aktivitas ' + item.title} title="Edit aktivitas"><Pencil size={14} /></button><button className="timeline-delete-button" onClick={() => { void onDeleteActivity(item) }} aria-label={'Hapus aktivitas ' + item.title} title="Hapus aktivitas"><Trash2 size={14} /></button></span>}
                 </div>
               )) : <p className="muted-copy">Belum ada aktivitas. Tambahkan update pertama untuk memulai timeline.</p>}
             </div>
