@@ -2295,8 +2295,8 @@ body.settings-hide-breadcrumbs .breadcrumb { visibility: hidden; } body.settings
 .content-plan-height-select select { height: 28px; border: 0; outline: 0; color: var(--on-surface); background: transparent; font-size: 9px; font-weight: 800; }
 .content-plan-access-note { display: flex; align-items: center; gap: 7px; padding: 9px 15px; border-bottom: 1px solid var(--outline); color: var(--on-surface-soft); background: color-mix(in srgb, var(--primary-container) 38%, var(--surface-bright)); font-size: 9px; line-height: 1.45; }
 .content-plan-access-note svg { flex: 0 0 auto; color: var(--primary); }
-.content-plan-viewer { position: relative; width: 100%; min-width: 0; overflow: auto; background: var(--surface-container); overscroll-behavior: contain; }
-.content-plan-viewer iframe { display: block; transform-origin: top left; border: 0; opacity: 0; background: var(--surface-bright); transition: opacity .2s ease; }
+.content-plan-viewer { position: relative; width: 100%; min-width: 0; height: min(var(--content-plan-preferred-height, 720px), max(360px, calc(100svh - 170px))); overflow: hidden; background: var(--surface-container); overscroll-behavior: contain; }
+.content-plan-viewer iframe { position: absolute; inset: 0 auto auto 0; display: block; transform-origin: top left; border: 0; opacity: 0; background: var(--surface-bright); transition: opacity .2s ease; }
 .content-plan-viewer iframe.loaded { opacity: 1; }
 .content-plan-frame-state { position: absolute; z-index: 1; inset: 0; display: grid; place-content: center; justify-items: center; gap: 7px; padding: 24px; color: var(--on-surface-soft); background: radial-gradient(circle at center, var(--surface-bright), var(--surface-container)); text-align: center; }
 .content-plan-frame-state strong { color: var(--on-surface); font-size: 13px; }
@@ -2370,6 +2370,7 @@ body.settings-hide-breadcrumbs .breadcrumb { visibility: hidden; } body.settings
   .content-plan-toolbar > .icon-button { width: 44px; height: 44px; }
   .content-plan-toolbar .content-plan-focus-button { min-height: 44px; grid-column: 1 / -1; }
   .content-plan-access-note { align-items: flex-start; padding: 10px 14px; }
+  .content-plan-viewer:not(.focus) { height: min(var(--content-plan-preferred-height, 720px), max(320px, calc(100svh - 380px))); }
   .content-plan-modal-scrim { align-items: end; padding: 0; }
   .content-plan-modal, .content-plan-modal-compact { width: 100%; max-height: 92svh; border-radius: 24px 24px 0 0; }
   .content-plan-modal-head { padding: 16px 16px 13px; }

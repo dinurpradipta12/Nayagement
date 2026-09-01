@@ -127,12 +127,15 @@ function SpreadsheetViewer({ sheet, zoom, height, focus = false, onOpenExternal 
   const viewerHeight = focus ? undefined : height
   const iframeStyle = {
     width: `${100 / scale}%`,
-    height: focus ? `${100 / scale}%` : `${height / scale}px`,
+    height: `${100 / scale}%`,
     transform: `scale(${scale})`,
+  } as CSSProperties
+  const viewerStyle = focus ? undefined : {
+    '--content-plan-preferred-height': `${viewerHeight}px`,
   } as CSSProperties
 
   return (
-    <div className={`content-plan-viewer ${focus ? 'focus' : ''}`} style={viewerHeight ? { height: viewerHeight } : undefined}>
+    <div className={`content-plan-viewer ${focus ? 'focus' : ''}`} style={viewerStyle}>
       {!loaded && !failed && <div className="content-plan-frame-state"><LoaderCircle className="spin" size={25} /><strong>Memuat Google Sheets…</strong><span>Menyiapkan spreadsheet untuk workspace Anda.</span></div>}
       {failed && !loaded && (
         <div className="content-plan-frame-state error" role="alert">
