@@ -53,6 +53,7 @@ import {
   updateWorkspaceOrderSubmissionStatus,
   updateWorkspaceClientProfile,
   saveWorkspaceInvoiceEditor,
+  saveWorkspaceThemePreference,
   saveWorkspaceServiceCatalog,
   saveWorkspaceServiceQuote,
   markWorkspaceServiceQuoteConverted,
@@ -65,7 +66,7 @@ import {
   uploadWorkspaceInvoiceSignature,
   uploadWorkspaceTaskAttachment,
 } from './services/workspaceData'
-import type { AppNotification, Client, ClientFormData, ClientProfileFormData, ConsultationBooking, Invoice, InvoiceDocumentStatus, InvoiceEditorDraft, OrderSubmission, OrderSubmissionStatus, Project, ProjectFormData, ProjectPayment, ProjectPaymentInput, RouteName, ServiceCatalog, ServiceCatalogInput, ServiceQuote, ServiceQuoteDraft, SettingsProfile, Task, TaskAttachment, TaskDetailInput, TimelineItem, ToastMessage } from './types'
+import type { AppNotification, Client, ClientFormData, ClientProfileFormData, ConsultationBooking, Invoice, InvoiceDocumentStatus, InvoiceEditorDraft, OrderSubmission, OrderSubmissionStatus, Project, ProjectFormData, ProjectPayment, ProjectPaymentInput, RouteName, ServiceCatalog, ServiceCatalogInput, ServiceQuote, ServiceQuoteDraft, SettingsProfile, SettingsSnapshot, Task, TaskAttachment, TaskDetailInput, TimelineItem, ToastMessage } from './types'
 
 const demoSessionKey = 'nayagement-demo-session'
 const themeKey = 'nayagement-theme'
@@ -245,6 +246,7 @@ export default function App() {
   const [route, setRoute] = useState<RouteName>(() => getRoute(getHash()))
   const [workspaceId, setWorkspaceId] = useState<string | null>(null)
   const [sidebarProfile, setSidebarProfile] = useState<SettingsProfile>({ id: 'local-user', fullName: 'Arunika', displayName: 'Arunika', username: 'arunika', email: '', phone: '', bio: '', roleTitle: 'Developer · Owner', accountType: 'Owner' })
+  const [settingsSnapshot, setSettingsSnapshot] = useState<SettingsSnapshot | null>(null)
   const [projects, setProjects] = useState<Project[]>([])
   const [payments, setPayments] = useState<ProjectPayment[]>([])
   const [paymentHistorySupported, setPaymentHistorySupported] = useState(() => !isSupabaseConfigured)
@@ -414,6 +416,7 @@ export default function App() {
     let active = true
     void loadWorkspaceSettings(workspaceId).then((settings) => {
       if (!active) return
+      setSettingsSnapshot(settings)
       const preference = settings.preferences
       setSidebarProfile(settings.profile)
       const effectiveDark = preference.theme === 'system'
@@ -481,9 +484,22 @@ export default function App() {
     if (isSupabaseConfigured && supabase) await supabase.auth.signOut()
     sessionStorage.removeItem(demoSessionKey)
     setWorkspaceId(null)
+    setSettingsSnapshot(null)
     setSignedIn(false)
     navigateToHash('/login', 'dashboard')
     notify('Anda telah keluar dari workspace.')
+  }
+
+  const toggleDarkMode = () => {
+    const nextDark = !dark
+    const nextTheme = nextDark ? 'dark' as const : 'light' as const
+    setDark(nextDark)
+    setSettingsSnapshot((current) => current ? { ...current, preferences: { ...current.preferences, theme: nextTheme } } : current)
+    if (isSupabaseConfigured && workspaceId) {
+      void saveWorkspaceThemePreference(nextTheme).catch((error) => {
+        notify(error instanceof Error ? error.message : 'Preferensi tampilan belum dapat disimpan.')
+      })
+    }
   }
 
   const openClientPortal = (project: Project) => {
@@ -1371,7 +1387,7 @@ export default function App() {
       page = <NotificationsPage notifications={notifications} onToast={notify} onRead={readNotification} onMarkAllRead={markAllNotificationsRead} />
       break
     case 'settings':
-      page = <SettingsPage workspaceId={workspaceId} dark={dark} onApplyTheme={(theme) => setDark(theme === 'system' ? window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false : theme === 'dark')} onProfileSaved={setSidebarProfile} onToast={notify} />
+      page = <SettingsPage workspaceId={workspaceId} dark={dark} initialSettings={settingsSnapshot} onApplyTheme={(theme) => setDark(theme === 'system' ? window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false : theme === 'dark')} onSettingsSaved={(settings) => { setSettingsSnapshot(settings); setSidebarProfile(settings.profile) }} onToast={notify} />
       break
     default:
       page = <DashboardPage projects={projects} tasks={tasks} payments={payments} clients={clients} invoices={invoices} consultationBookings={consultationBookings} userName={sidebarProfile.displayName || sidebarProfile.fullName} onOpenProject={openProjectForm} onOpenProjects={() => navigate('projects')} onOpenCalendar={() => navigate('calendar')} onOpenClients={() => navigate('clients')} onOpenFinance={() => navigate('finance')} onToggleTask={toggleTask} />
@@ -1414,7 +1430,7 @@ export default function App() {
         onRouteChange={navigate}
         onOpenProject={openProjectForm}
         onOpenSearch={() => setSearchOpen(true)}
-        onToggleDark={() => setDark((current) => !current)}
+        onToggleDark={toggleDarkMode}
         onSignOut={() => { void signOut() }}
       >
         {dataError && <p className="workspace-data-warning">{dataError}</p>}

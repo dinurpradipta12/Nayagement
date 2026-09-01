@@ -28,6 +28,15 @@ function fallbackSettings(dark: boolean): SettingsSnapshot {
   }
 }
 
+function themeIsDark(theme: SettingsPreferences['theme']) {
+  return theme === 'dark' || (theme === 'system' && (window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false))
+}
+
+function alignSettingsTheme(settings: SettingsSnapshot, dark: boolean) {
+  if (themeIsDark(settings.preferences.theme) === dark) return settings
+  return { ...settings, preferences: { ...settings.preferences, theme: dark ? 'dark' as const : 'light' as const } }
+}
+
 function formatDate(value?: string) {
   if (!value) return 'Belum tersedia'
   const date = new Date(value)
@@ -42,11 +51,11 @@ function Section({ eyebrow, title, description, children, className = '' }: { ey
   return <section className={`settings-card ${className}`}><div><p className="eyebrow">{eyebrow}</p><h2>{title}</h2><p>{description}</p></div>{children}</section>
 }
 
-export function SettingsPage({ workspaceId, dark, onApplyTheme, onProfileSaved, onToast }: { workspaceId: string | null; dark: boolean; onApplyTheme: (theme: SettingsPreferences['theme']) => void; onProfileSaved: (profile: SettingsProfile) => void; onToast: (message: string) => void }) {
+export function SettingsPage({ workspaceId, dark, initialSettings, onApplyTheme, onSettingsSaved, onToast }: { workspaceId: string | null; dark: boolean; initialSettings: SettingsSnapshot | null; onApplyTheme: (theme: SettingsPreferences['theme']) => void; onSettingsSaved: (settings: SettingsSnapshot) => void; onToast: (message: string) => void }) {
   const [active, setActive] = useState<SettingsTab>('profile')
-  const [saved, setSaved] = useState<SettingsSnapshot>(() => fallbackSettings(dark))
-  const [draft, setDraft] = useState<SettingsSnapshot>(() => fallbackSettings(dark))
-  const [loading, setLoading] = useState(Boolean(isSupabaseConfigured && workspaceId))
+  const [saved, setSaved] = useState<SettingsSnapshot>(() => initialSettings ?? fallbackSettings(dark))
+  const [draft, setDraft] = useState<SettingsSnapshot>(() => alignSettingsTheme(initialSettings ?? fallbackSettings(dark), dark))
+  const [loading, setLoading] = useState(Boolean(isSupabaseConfigured && workspaceId && !initialSettings))
   const [saving, setSaving] = useState(false)
   const [setupError, setSetupError] = useState('')
   const appBaseUrl = `${window.location.origin}${window.location.pathname}`.replace(/\/$/, '')
@@ -86,10 +95,14 @@ export function SettingsPage({ workspaceId, dark, onApplyTheme, onProfileSaved, 
       setSaved(local); setDraft(local); setLoading(false)
       return
     }
+    if (initialSettings) {
+      setSaved(initialSettings); setDraft(alignSettingsTheme(initialSettings, dark)); setLoading(false); setSetupError('')
+      return
+    }
     setLoading(true); setSetupError('')
     void loadWorkspaceSettings(workspaceId).then((value) => {
       if (!activeRequest) return
-      setSaved(value); setDraft(value); applyPresentation(value.preferences)
+      setSaved(value); setDraft(alignSettingsTheme(value, dark)); onSettingsSaved(value)
     }).catch((error) => {
       if (!activeRequest) return
       setSetupError(error instanceof Error ? error.message : 'Pengaturan belum dapat dimuat.')
@@ -97,7 +110,7 @@ export function SettingsPage({ workspaceId, dark, onApplyTheme, onProfileSaved, 
     return () => { activeRequest = false }
   // Pengaturan perlu dimuat kembali ketika sesi berpindah ke workspace lain.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workspaceId])
+  }, [workspaceId, initialSettings])
 
   useEffect(() => {
     let activeRequest = true
@@ -176,6 +189,10 @@ export function SettingsPage({ workspaceId, dark, onApplyTheme, onProfileSaved, 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft.preferences])
 
+  useEffect(() => {
+    setDraft((current) => alignSettingsTheme(current, dark))
+  }, [dark])
+
   const chooseImage = (kind: 'avatar' | 'logo', file?: File) => {
     if (!file) return
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { onToast('Gunakan gambar JPG, PNG, atau WebP.'); return }
@@ -205,7 +222,7 @@ export function SettingsPage({ workspaceId, dark, onApplyTheme, onProfileSaved, 
           setTelegramSaved(telegram); setTelegramDraft(telegram); setTelegramSetupError('')
         }
       }
-      setSaved(next); setDraft(next); setAvatarFile(null); setLogoFile(null); setPreviewOpen(false); applyPresentation(next.preferences); onProfileSaved(next.profile)
+      setSaved(next); setDraft(next); setAvatarFile(null); setLogoFile(null); setPreviewOpen(false); applyPresentation(next.preferences); onSettingsSaved(next)
       if (!isSupabaseConfigured) setTelegramSaved(telegramDraft)
       onToast(isSupabaseConfigured ? 'Pengaturan berhasil disimpan.' : 'Pengaturan demo berhasil diperbarui.')
     } catch (error) {

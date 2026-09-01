@@ -1656,6 +1656,26 @@ export async function loadWorkspaceSettings(workspaceId: string): Promise<Settin
   }
 }
 
+export async function saveWorkspaceThemePreference(theme: SettingsPreferences['theme']) {
+  const client = requireSupabase()
+  const { data: authData, error: authError } = await client.auth.getUser()
+  if (authError || !authData.user) throw new Error('Sesi akun tidak ditemukan. Silakan masuk kembali.')
+  const { data, error } = await client
+    .from('user_profiles')
+    .select('preferences')
+    .eq('id', authData.user.id)
+    .maybeSingle()
+  if (isMissingSettingsSchema(error)) throw settingsSetupError()
+  throwIfError(error)
+  const preferences = recordValue(data?.preferences)
+  const { error: updateError } = await client
+    .from('user_profiles')
+    .update({ preferences: { ...preferences, theme } })
+    .eq('id', authData.user.id)
+  if (isMissingSettingsSchema(updateError)) throw settingsSetupError()
+  throwIfError(updateError)
+}
+
 export async function uploadWorkspaceSettingsAvatar(userId: string, file: File) {
   if (!settingsImageTypes.has(file.type)) throw new Error('Gunakan gambar JPG, PNG, atau WebP untuk foto profil.')
   if (file.size > maxSettingsImageBytes) throw new Error('Ukuran foto profil maksimal 5 MB.')
