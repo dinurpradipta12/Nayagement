@@ -3,7 +3,6 @@ import { WorkspaceLayout } from './components/WorkspaceLayout'
 import { ProjectFormModal } from './components/ProjectFormModal'
 import { SearchModal } from './components/SearchModal'
 import { Toast } from './components/ui'
-import { auroraTimeline, clients as initialClients, initialInvoices, initialNotifications, initialProjects, initialTasks } from './data/mockData'
 import { initials } from './lib/format'
 import { generateInvoiceNumber } from './lib/invoice'
 import { supabase } from './lib/supabase'
@@ -71,7 +70,6 @@ import type { AppNotification, Client, ClientFormData, ClientProfileFormData, Co
 const demoSessionKey = 'nayagement-demo-session'
 const themeKey = 'nayagement-theme'
 const routeNames: RouteName[] = ['dashboard', 'projects', 'tasks', 'calendar', 'clients', 'content-plan', 'finance', 'invoices', 'forms', 'orders', 'bookings', 'personal-finance', 'notifications', 'settings']
-const initialTimelines: Record<string, TimelineItem[]> = { 'p-aurora': auroraTimeline }
 const accentOptions: Project['accent'][] = ['blue', 'violet', 'peach', 'mint', 'pink']
 
 const getHash = () => window.location.hash.replace(/^#/, '') || '/dashboard'
@@ -247,19 +245,19 @@ export default function App() {
   const [route, setRoute] = useState<RouteName>(() => getRoute(getHash()))
   const [workspaceId, setWorkspaceId] = useState<string | null>(null)
   const [sidebarProfile, setSidebarProfile] = useState<SettingsProfile>({ id: 'local-user', fullName: 'Arunika', displayName: 'Arunika', username: 'arunika', email: '', phone: '', bio: '', roleTitle: 'Developer · Owner', accountType: 'Owner' })
-  const [projects, setProjects] = useState<Project[]>(initialProjects)
+  const [projects, setProjects] = useState<Project[]>([])
   const [payments, setPayments] = useState<ProjectPayment[]>([])
   const [paymentHistorySupported, setPaymentHistorySupported] = useState(() => !isSupabaseConfigured)
-  const [tasks, setTasks] = useState<Task[]>(initialTasks)
-  const [clients, setClients] = useState<Client[]>(initialClients)
-  const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices)
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [clients, setClients] = useState<Client[]>([])
+  const [invoices, setInvoices] = useState<Invoice[]>([])
   const [invoiceDrafts, setInvoiceDrafts] = useState<Record<string, InvoiceEditorDraft>>({})
   const [serviceCatalogs, setServiceCatalogs] = useState<ServiceCatalog[]>([])
   const [serviceQuotes, setServiceQuotes] = useState<ServiceQuote[]>([])
-  const [notifications, setNotifications] = useState<AppNotification[]>(initialNotifications)
+  const [notifications, setNotifications] = useState<AppNotification[]>([])
   const [orderSubmissions, setOrderSubmissions] = useState<OrderSubmission[]>([])
   const [consultationBookings, setConsultationBookings] = useState<ConsultationBooking[]>([])
-  const [timelines, setTimelines] = useState<Record<string, TimelineItem[]>>(initialTimelines)
+  const [timelines, setTimelines] = useState<Record<string, TimelineItem[]>>({})
   const [dataError, setDataError] = useState('')
   const [dark, setDark] = useState(() => localStorage.getItem(themeKey) === 'dark')
   const [projectFormOpen, setProjectFormOpen] = useState(false)
@@ -1402,7 +1400,7 @@ export default function App() {
   if (isPublicOrder) return <PublicOrderFormPage token={hash.split('/').filter(Boolean)[1] ?? ''} onBack={() => signedIn ? navigate('dashboard') : navigateToHash('/login', 'dashboard')} />
   if (hash === '/booking') return <PublicConsultationBookingPage />
   if (authLoading) return <main className="login-page"><section className="login-panel"><div className="login-form-wrap"><p className="eyebrow">Private workspace</p><h2>Menyiapkan workspace…</h2><p>Mengecek sesi aman Anda.</p></div></section></main>
-  if (!signedIn) return <LoginPage onLogin={login} onDemo={startDemo} showDemo={!isSupabaseConfigured} showPortal={!isSupabaseConfigured} onOpenPortal={() => navigateToHash('/client/aurora-brand-refresh', 'dashboard')} />
+  if (!signedIn) return <LoginPage onLogin={login} onDemo={startDemo} showDemo={!isSupabaseConfigured} />
 
   return (
     <div className={'nayagement-root ' + (dark ? 'theme-dark' : '')}>
