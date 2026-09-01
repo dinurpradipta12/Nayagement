@@ -127,7 +127,6 @@ export function ProjectsPage({ projects, onOpenProject, onOpenOrderForms, onView
         {filtered.length === 0 && (
           <div className="empty-state"><span className="empty-icon"><Search size={24} /></span><strong>Tidak ada proyek yang cocok</strong><p>Ubah kata kunci atau filter untuk melihat proyek lain.</p><button className="soft-button" onClick={() => { setStatus('All'); setQuery('') }}>Bersihkan pencarian</button></div>
         )}
-        <button className={`new-project-card ${view === 'list' ? 'new-project-list' : ''}`} onClick={onOpenProject}><span><FolderPlus size={22} /></span><strong>Mulai proyek baru</strong><p>Simpan brief, deadline, dan nilai proyek dalam satu alur.</p></button>
       </section>
     </div>
   )
