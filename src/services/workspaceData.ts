@@ -1498,6 +1498,35 @@ export async function updateWorkspaceConsultationBookingStatus(workspaceId: stri
   throwIfError(error)
 }
 
+const arunikaSyncErrorMessage = async (error: unknown) => {
+  const response = (error as { context?: Response } | null)?.context
+  if (response) {
+    try {
+      const body = await response.clone().json() as { error?: unknown }
+      if (body.error === 'arunika_connection_not_configured') return 'Workspace ini belum dihubungkan di Arunika. Buka 1:1 Mentorship → Integrasi, lalu simpan Workspace ID Nayagement ini.'
+      if (body.error === 'forbidden') return 'Hanya owner atau admin workspace yang dapat menyinkronkan booking ke Arunika.'
+      if (body.error === 'booking_not_found') return 'Booking tidak ditemukan atau sudah dihapus.'
+      if (body.error === 'arunika_unreachable') return 'Server Arunika belum dapat dihubungi. Coba lagi beberapa saat lagi.'
+    } catch {
+      // The generic fallback below remains useful when the response is not JSON.
+    }
+  }
+  return 'Booking belum dapat disinkronkan ke Arunika. Periksa konfigurasi integrasi lalu coba lagi.'
+}
+
+export async function syncWorkspaceConsultationBookingToArunika(workspaceId: string, bookingId: string) {
+  const client = requireSupabase()
+  const { data, error } = await client.functions.invoke('arunika-booking-sync', {
+    body: { workspaceId, bookingId },
+  })
+  if (error) throw new Error(await arunikaSyncErrorMessage(error))
+  if (!data?.ok) {
+    if (data?.error === 'arunika_connection_not_configured') throw new Error('Workspace ini belum dihubungkan di Arunika. Buka 1:1 Mentorship → Integrasi, lalu simpan Workspace ID Nayagement ini.')
+    throw new Error('Booking belum dapat disinkronkan ke Arunika. Periksa konfigurasi integrasi lalu coba lagi.')
+  }
+  return data.sync as { portalId?: string; scheduleEventId?: string; ignored?: boolean } | null
+}
+
 export async function deleteWorkspaceConsultationBooking(workspaceId: string, bookingId: string) {
   const client = requireSupabase()
   const { data, error } = await client.rpc('delete_workspace_consultation_booking', {
