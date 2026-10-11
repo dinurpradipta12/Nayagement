@@ -5,3 +5,8 @@ verify_jwt = false
 
 [functions.telegram-bot]
 verify_jwt = false
+
+# The function validates the caller's Supabase session itself so CORS preflight
+# stays available, then permits only workspace owners/admins to sync data.
+[functions.arunika-booking-sync]
+verify_jwt = false
