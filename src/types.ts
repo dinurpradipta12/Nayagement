@@ -559,6 +559,7 @@ export interface ConsultationBooking {
   details: string
   status: ConsultationBookingStatus
   createdAt: string
+  updatedAt: string
 }
 
 export interface NavItem {

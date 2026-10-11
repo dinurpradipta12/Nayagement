@@ -1363,6 +1363,7 @@ type ConsultationBookingRow = {
   details: string | null
   status: string
   created_at: string
+  updated_at: string
 }
 
 export interface WorkspaceConsultationData {
@@ -1423,6 +1424,7 @@ function mapConsultationBooking(row: ConsultationBookingRow): ConsultationBookin
     details: row.details ?? '',
     status: statusMap[row.status] ?? 'New',
     createdAt: row.created_at,
+    updatedAt: row.updated_at,
   }
 }
 
@@ -1432,7 +1434,7 @@ export async function loadWorkspaceConsultationData(workspaceId: string): Promis
     client.from('consultation_settings').select('workspace_id, title, subtitle, duration_minutes, timezone, instructions, whatsapp_number, is_public').eq('workspace_id', workspaceId).maybeSingle(),
     client.from('consultation_slots').select('id, workspace_id, starts_at, ends_at, is_active').eq('workspace_id', workspaceId).order('starts_at'),
     client.from('consultation_weekly_availability').select('workspace_id, weekday, is_enabled, times').eq('workspace_id', workspaceId).order('weekday'),
-    client.from('consultation_bookings').select('id, workspace_id, slot_id, starts_at, ends_at, name, email, whatsapp, topic, details, status, created_at').eq('workspace_id', workspaceId).order('starts_at'),
+    client.from('consultation_bookings').select('id, workspace_id, slot_id, starts_at, ends_at, name, email, whatsapp, topic, details, status, created_at, updated_at').eq('workspace_id', workspaceId).order('starts_at'),
   ])
   throwIfError(settingsResult.error)
   throwIfError(slotsResult.error)
