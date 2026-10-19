@@ -117,3 +117,13 @@
   .office3d-immersive .office3d-status-dock{margin-top:8px}
   .office3d-immersive .office3d-message{margin-top:8px}
 }
+
+/* Brand and projection labels stay quiet so the office remains the visual focus. */
+.office3d-workcenter-logo{overflow:hidden;padding:0;background:transparent;box-shadow:none}
+.office3d-workcenter-logo-image{display:block;width:100%;height:100%;object-fit:contain;border-radius:8px}
+.office3d-projections .office3d-room-label{display:block;padding:2px 3px!important;border:0!important;border-radius:0;background:transparent!important;box-shadow:none!important;backdrop-filter:none!important;color:color-mix(in srgb,var(--on-surface) 70%,transparent);font-size:8px;font-weight:600;letter-spacing:.01em;line-height:1.2;opacity:.66;text-shadow:0 1px 2px color-mix(in srgb,var(--surface-bright) 90%,transparent);transition:color .16s ease,opacity .16s ease}
+.office3d-projections .office3d-room-label:hover,.office3d-projections .office3d-room-label.is-active{border:0!important;background:transparent!important;color:var(--primary);opacity:1}
+
+@media(min-width:768px){
+  .office-immersive-canvas.office-sidebar-hidden .office3d-immersive .office3d-workcenter-header{left:52px}
+}

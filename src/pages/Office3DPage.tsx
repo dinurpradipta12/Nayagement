@@ -1,13 +1,14 @@
 import { Component, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { ArrowDownToLine, ArrowRight, Armchair, Box, CalendarDays, Check, ChevronRight, Clock3, Download, Focus, LampDesk, Layers3, LayoutDashboard, Leaf, ListTodo, LoaderCircle, Monitor, Move, Pencil, Plus, Redo2, RefreshCw, RotateCcw, RotateCw, Save, Search, SlidersHorizontal, Sofa, Sparkles, Trash2, Undo2, Upload, UsersRound, X } from 'lucide-react'
+import { ArrowDownToLine, ArrowRight, Armchair, Box, CalendarDays, Check, ChevronRight, Clock3, Download, Focus, LampDesk, Layers3, LayoutDashboard, Leaf, ListTodo, LoaderCircle, Monitor, Moon, Move, Pencil, Plus, Redo2, RefreshCw, RotateCcw, RotateCw, Save, Search, SlidersHorizontal, Sofa, Sparkles, Sun, Trash2, Undo2, Upload, UsersRound, X } from 'lucide-react'
 import { TaskDetailDrawer } from '../components/TaskDetailDrawer'
+import { BrandMark } from '../components/ui'
 import OfficeScene from '../features/office3d/OfficeScene'
 import { FURNITURE, ROOMS, consultationGuests, localDay, isServiceFurniture, freshLayout, officeItems, placementError, readLayout, snap, type Furniture, type FurnitureKind, type OfficeData, type OfficeItem, type OfficeLayout, type RoomId } from '../features/office3d/model'
 import type { Project, RouteName, Task, TaskAttachment, TaskDetailInput } from '../types'
 import '../styles/office3d.css'
 
 interface Props extends OfficeData {
-  workspaceId: string | null; userId: string; dark: boolean; reducedMotion: boolean
+  workspaceId: string | null; userId: string; dark: boolean; reducedMotion: boolean; onToggleDark: () => void
   onRoute: (route: RouteName) => void; onOpenProject: (id: string) => void
   onLoadTaskDetail: (task: Task) => Promise<Task>; onSaveTaskDetail: (task: Task, input: TaskDetailInput) => Promise<Task>
   onAddTaskNote: (task: Task, body: string) => Promise<void>; onUploadTaskAttachment: (task: Task,file: File) => Promise<void>; onDeleteTaskAttachment: (task: Task,file: TaskAttachment) => Promise<void>
@@ -74,9 +75,10 @@ export default function Office3DPage(props: Props) {
   ]
   return <section className="office3d-root office3d-immersive" aria-label="Office 3D">
     <header className="office3d-workcenter-header">
-      <div className="office3d-workcenter-brand"><span className="office3d-workcenter-logo"><Box size={18}/></span><span><strong>Nayagement Work Center</strong><small>{items.length} aktivitas · {guests.filter(g=>g.phase==='waiting').length} menunggu · {guests.filter(g=>g.phase==='consulting'||g.phase==='entering').length} konsultasi</small></span></div>
+      <div className="office3d-workcenter-brand"><span className="office3d-workcenter-logo"><BrandMark className="office3d-workcenter-logo-image"/></span><span><strong>Nayagement Work Center</strong><small>{items.length} aktivitas · {guests.filter(g=>g.phase==='waiting').length} menunggu · {guests.filter(g=>g.phase==='consulting'||g.phase==='entering').length} konsultasi</small></span></div>
       <div className="office3d-workcenter-actions">
         <span className="office3d-local-clock"><Clock3 size={16}/><span><strong>{new Intl.DateTimeFormat('id-ID',{hour:'2-digit',minute:'2-digit'}).format(now).replace('.',':')}</strong><small>Waktu lokal</small></span></span>
+        <button className="office3d-icon-button" aria-label={props.dark?'Gunakan mode terang':'Gunakan mode gelap'} title={props.dark?'Gunakan mode terang':'Gunakan mode gelap'} onClick={props.onToggleDark}>{props.dark?<Sun size={16}/>:<Moon size={16}/>}</button>
         <button className="office3d-button office3d-button-quiet" onClick={()=>props.onRoute('dashboard')}><LayoutDashboard size={15}/> Dashboard</button>
         <button className="office3d-icon-button" aria-label="Muat ulang posisi kamera" title="Reset kamera" onClick={()=>{setRoom(null);setSelected(null);setReset(value=>value+1)}}><RefreshCw size={16}/></button>
         <button className="office3d-button office3d-button-quiet" onClick={()=>setShowAssets(!showAssets)}><Download size={15}/> Aset 3D</button>

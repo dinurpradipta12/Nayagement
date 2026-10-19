@@ -2237,20 +2237,15 @@ body.settings-hide-breadcrumbs .breadcrumb { visibility: hidden; } body.settings
   }
 
   .office-immersive-canvas .workspace-content {
-    grid-template-rows: 58px minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
   }
 
   .office-immersive-canvas .desktop-topbar {
-    height: 58px;
-    padding-right: 18px;
-    padding-left: 22px;
-  }
-
-  .office-immersive-canvas.office-sidebar-hidden .desktop-topbar {
-    padding-left: 57px;
+    display: none;
   }
 
   .office-immersive-canvas .page-content {
+    height: 100%;
     overflow: hidden;
     padding: 8px;
     scrollbar-gutter: auto;
@@ -2321,6 +2316,17 @@ body.settings-hide-breadcrumbs .breadcrumb { visibility: hidden; } body.settings
 
   .office-immersive-canvas.office-sidebar-open .office-sidebar-toggle {
     left: 210px;
+  }
+}
+
+@media (max-width: 767px) {
+  .office-immersive-canvas .mobile-topbar {
+    display: none;
+  }
+
+  .office-immersive-canvas .page-content {
+    min-height: 100svh;
+    padding-top: 8px;
   }
 }
 

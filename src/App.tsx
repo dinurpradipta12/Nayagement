@@ -1296,7 +1296,7 @@ export default function App() {
   switch (route) {
     case 'office':
       page = <Suspense fallback={<div className="empty-state"><strong>Menyiapkan kantor 3D…</strong><p>Ruang kerja Anda sedang dibuka.</p></div>}><Office3DPage
-        workspaceId={workspaceId} userId={sidebarProfile.id} dark={dark} reducedMotion={settingsSnapshot?.preferences.reduceAnimations ?? false}
+        workspaceId={workspaceId} userId={sidebarProfile.id} dark={dark} reducedMotion={settingsSnapshot?.preferences.reduceAnimations ?? false} onToggleDark={toggleDarkMode}
         projects={projects} tasks={tasks} bookings={consultationBookings} clients={clients} invoices={invoices} orders={orderSubmissions} timelines={timelines}
         onRoute={navigate} onOpenProject={(id) => { const project = projects.find(p => p.id === id); if (project) openProjectDetail(project); else navigate('projects') }}
         onLoadTaskDetail={loadTaskDetail} onSaveTaskDetail={saveTaskDetail} onAddTaskNote={addTaskNote} onUploadTaskAttachment={addTaskAttachment} onDeleteTaskAttachment={removeTaskAttachment}
