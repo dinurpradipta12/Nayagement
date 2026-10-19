@@ -118,6 +118,7 @@ export function DashboardPage({
     })
   }
   revenueMonths.forEach((month) => { month.value = revenueByMonth.get(month.key) ?? 0 })
+  const hasRevenueData = revenueMonths.some((month) => month.value > 0)
   const currentRevenue = revenueMonths[revenueMonths.length - 1]?.value ?? 0
   const previousRevenue = revenueMonths[revenueMonths.length - 2]?.value ?? 0
   const revenueChange = previousRevenue > 0 ? Math.round(((currentRevenue - previousRevenue) / previousRevenue) * 100) : null
@@ -234,24 +235,31 @@ export function DashboardPage({
           <div className="revenue-main-value">
             <strong>{rupiah(currentRevenue)}</strong>
             <span className={revenueTrendDirection === 'down' ? 'trend-down' : revenueTrendDirection === 'neutral' ? 'trend-neutral' : ''}>
-              {revenueTrendDirection === 'down' ? <ArrowDownRight size={15} /> : <TrendingUp size={15} />}{revenueTrendLabel}
+              {revenueTrendDirection === 'down' ? <ArrowDownRight size={15} /> : revenueTrendDirection === 'up' ? <TrendingUp size={15} /> : null}{revenueTrendLabel}
             </span>
           </div>
-          <div className="revenue-chart" aria-label="Grafik pendapatan enam bulan terakhir dari pembayaran tersimpan">
-            <svg viewBox="0 0 600 180" preserveAspectRatio="none" role="img">
-              <defs>
-                <linearGradient id="revenueFill" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="#286ee8" stopOpacity=".27" />
-                  <stop offset="100%" stopColor="#286ee8" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <path className="chart-grid" d="M0 31H600 M0 87H600 M0 143H600" />
-              <path className="chart-area" d={chartArea} />
-              <path className="chart-line" d={chartLine} />
-              <circle cx={latestChartPoint.x} cy={latestChartPoint.y} r="6" className="chart-point" />
-            </svg>
-            <div className="chart-labels">{revenueMonths.map((month) => <span key={month.key}>{month.label}</span>)}</div>
-          </div>
+          {hasRevenueData ? (
+            <div className="revenue-chart" aria-label="Grafik pendapatan enam bulan terakhir dari pembayaran tersimpan">
+              <svg viewBox="0 0 600 180" preserveAspectRatio="none" role="img">
+                <defs>
+                  <linearGradient id="revenueFill" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="#286ee8" stopOpacity=".27" />
+                    <stop offset="100%" stopColor="#286ee8" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                <path className="chart-grid" d="M0 31H600 M0 87H600 M0 143H600" />
+                <path className="chart-area" d={chartArea} />
+                <path className="chart-line" d={chartLine} />
+                <circle cx={latestChartPoint.x} cy={latestChartPoint.y} r="6" className="chart-point" />
+              </svg>
+              <div className="chart-labels">{revenueMonths.map((month) => <span key={month.key}>{month.label}</span>)}</div>
+            </div>
+          ) : (
+            <div className="revenue-chart-empty" role="status">
+              <span><CircleDollarSign size={21} /></span>
+              <div><strong>Belum ada pemasukan tercatat</strong><p>Catat pembayaran pertama agar grafik pendapatan mulai terbentuk.</p></div>
+            </div>
+          )}
         </article>
 
         <article className="card focus-card">

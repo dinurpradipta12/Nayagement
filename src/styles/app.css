@@ -197,6 +197,11 @@ kbd { padding: 2px 5px; border: 1px solid var(--outline); border-radius: 5px; co
 .chart-line { fill: none; stroke: #2a70e2; stroke-width: 3; stroke-linecap: round; }
 .chart-point { fill: var(--surface-bright); stroke: #2a70e2; stroke-width: 4; }
 .chart-labels { display: flex; justify-content: space-between; padding: 0 2px; color: #92a0b4; font-size: 10px; }
+.revenue-chart-empty { display: flex; min-height: 137px; align-items: center; justify-content: center; gap: 11px; margin-top: 3px; padding: 18px; border: 1px dashed var(--outline-strong); border-radius: 15px; color: var(--on-surface-soft); background: linear-gradient(145deg, color-mix(in srgb, var(--primary-container) 38%, transparent), color-mix(in srgb, var(--surface-container) 55%, transparent)); text-align: left; }
+.revenue-chart-empty > span { display: grid; width: 40px; height: 40px; flex: 0 0 auto; place-items: center; border-radius: 13px; color: var(--primary); background: var(--primary-container); }
+.revenue-chart-empty > div { display: grid; max-width: 245px; gap: 4px; }
+.revenue-chart-empty strong { color: var(--on-surface); font-size: 12px; }
+.revenue-chart-empty p { color: var(--on-surface-soft); font-size: 10px; line-height: 1.45; }
 .focus-card { min-height: 292px; padding-bottom: 14px; }
 .count-badge { display: grid; min-width: 28px; height: 27px; place-items: center; border-radius: 10px; color: var(--primary); background: var(--primary-container); font-size: 12px; font-weight: 800; }
 .count-badge.success { color: var(--success); background: var(--success-container); }
