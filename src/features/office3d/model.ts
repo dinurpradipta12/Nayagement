@@ -5,7 +5,7 @@ export type FurnitureKind = 'desk' | 'chair' | 'sofa' | 'table' | 'plant' | 'she
 export interface OfficeRoom { id: RoomId; name: string; subtitle: string; color: string; x: number; z: number; width: number; depth: number; doorX: number; doorZ: number; doorSide: 'north'|'south'|'east'|'west'; doors?: {x:number;z:number;side:'north'|'south'|'east'|'west'}[] }
 export interface Furniture { id: string; kind: FurnitureKind; room: RoomId; x: number; z: number; rotation: number }
 export interface OfficeLayout { version: 1; plan: 3; furniture: Furniture[]; floor: string; wall: string; daylight: number }
-export interface OfficeItem { id: string; kind: 'task' | 'booking' | 'order' | 'timeline'; room: RoomId; title: string; subtitle: string; status: string; date?: string; projectId?: string; progress?: number; priority?: string; sourceId: string }
+export interface OfficeItem { id: string; kind: 'task' | 'project' | 'booking' | 'order' | 'timeline'; room: RoomId; title: string; subtitle: string; status: string; date?: string; projectId?: string; progress?: number; priority?: string; sourceId: string }
 export interface OfficeData { projects: Project[]; tasks: Task[]; bookings: ConsultationBooking[]; clients: Client[]; invoices: Invoice[]; orders: OrderSubmission[]; timelines: Record<string, TimelineItem[]> }
 
 // Adapted from the user's Planner 5D office: central studio, left lounge/service wing,
@@ -109,11 +109,14 @@ export function localDay(value?: string): string | null {
 export function officeItems(data: OfficeData, project: string, date: string): OfficeItem[] {
   const matches = (id?: string, at?: string) => (!project || id===project) && (!date || localDay(at)===date)
   const items: OfficeItem[] = data.tasks.filter(t=>t.status!=='Completed' && matches(t.projectId,t.dueAt ?? undefined)).map(t=>({id:'task:'+t.id,sourceId:t.id,kind:'task',room:t.status==='In Progress'?'studio':t.status==='Review'?'review':'planning',title:t.name,subtitle:t.project,status:t.status,date:t.dueAt ?? undefined,projectId:t.projectId,progress:t.progress,priority:t.priority}))
+  for (const p of data.projects) if (!['Completed','Cancelled'].includes(p.status) && matches(p.id,p.dueDate)) {
+    const room:RoomId=p.status==='In Progress'?'studio':['Review','Revision'].includes(p.status)?'review':'planning'
+    items.push({id:'project:'+p.id,sourceId:p.id,kind:'project',room,title:p.name,subtitle:`${p.client} · ${p.status}`,status:room==='planning'?'Todo':p.status,date:p.dueDate,projectId:p.id,progress:p.progress,priority:p.priority})
+  }
   if (!project) {
     for (const b of data.bookings) if (b.status!=='Cancelled' && b.status!=='Completed' && matches(undefined,b.startsAt)) items.push({id:'booking:'+b.id,sourceId:b.id,kind:'booking',room:'consultation',title:b.name,subtitle:b.topic,status:b.status,date:b.startsAt})
   }
-  for (const o of data.orders) if (['New','Reviewing'].includes(o.status) && matches(o.projectId,o.createdAt)) items.push({id:'order:'+o.id,sourceId:o.id,kind:'order',room:'reception',title:o.submitterName,subtitle:o.orderFormTitle,status:o.status,date:o.createdAt,projectId:o.projectId})
-  for (const [projectId, timeline] of Object.entries(data.timelines)) for (const t of timeline) if(t.state!=='done' && matches(projectId,t.occurredAt)) items.push({id:'timeline:'+projectId+':'+(t.id??t.title),sourceId:t.id??'',kind:'timeline',room:'planning',title:t.title,subtitle:data.projects.find(p=>p.id===projectId)?.name??'Agenda proyek',status:t.state,date:t.occurredAt,projectId})
+  for (const o of data.orders) if (['New','Reviewing','Accepted'].includes(o.status) && matches(o.projectId,o.createdAt)) items.push({id:'order:'+o.id,sourceId:o.id,kind:'order',room:o.status==='New'?'reception':'studio',title:o.submitterName,subtitle:o.orderFormTitle,status:o.status,date:o.createdAt,projectId:o.projectId})
   return items.sort((a,b)=>(a.date?Date.parse(a.date):Infinity)-(b.date?Date.parse(b.date):Infinity))
 }
 
@@ -166,6 +169,41 @@ export function workstations(furniture:Furniture[]):Workstation[] {
   used.add(chair.id)
  }
  return result
+}
+
+const ACTIVITY_STUDIO_SLOTS = [
+ {x:-3.6,z:-4.3,rotation:0,chairX:-3.6,chairZ:-3.3,chairRotation:Math.PI},
+ {x:-.5,z:-.3,rotation:0,chairX:-.5,chairZ:-1.3,chairRotation:0},
+ {x:-.2,z:-3.6,rotation:0,chairX:-.2,chairZ:-4.6,chairRotation:0},
+ {x:2.4,z:-.3,rotation:0,chairX:2.4,chairZ:-1.3,chairRotation:0},
+ {x:2.9,z:-4.9,rotation:Math.PI/2,chairX:3.9,chairZ:-4.9,chairRotation:-Math.PI/2},
+]
+const ACTIVITY_PLANNING_CHAIRS = [
+ {x:1.4,z:5.5,rotation:Math.PI/2},{x:3.5,z:5.5,rotation:-Math.PI/2},{x:1.4,z:3,rotation:0},{x:4.5,z:3,rotation:0},
+]
+
+// Activity furniture is transient: it expands visual capacity without mutating or saving the user's layout.
+export function activityLayout(layout:OfficeLayout,items:OfficeItem[]):OfficeLayout {
+ const furniture=layout.furniture.filter(item=>!item.id.startsWith('activity-')).map(item=>({...item}))
+ const reservable=items.filter(item=>item.kind==='task'||item.kind==='project'||item.kind==='order')
+ const requiredStations=reservable.filter(item=>item.room==='studio'||item.room==='planning'||(item.kind==='order'&&item.status==='New')).length
+ let stationCount=workstations(furniture).filter(station=>furniture.find(item=>item.id===station.deskId)?.room==='studio').length
+ for(const [index,slot] of ACTIVITY_STUDIO_SLOTS.entries()){
+  if(stationCount>=requiredStations)break
+  const desk:Furniture={id:`activity-studio-desk-${index}`,kind:'desk',room:'studio',x:slot.x,z:slot.z,rotation:slot.rotation}
+  const chair:Furniture={id:`activity-studio-chair-${index}`,kind:'chair',room:'studio',x:slot.chairX,z:slot.chairZ,rotation:slot.chairRotation}
+  if(placementError(desk,furniture))continue
+  furniture.push(desk)
+  if(placementError(chair,furniture)){furniture.pop();continue}
+  furniture.push(chair);stationCount++
+ }
+ const planningEntries=items.filter(item=>item.room==='planning'&&item.status==='Todo').length
+ const extraSeats=Math.min(ACTIVITY_PLANNING_CHAIRS.length,Math.max(4,planningEntries-2))
+ for(const [index,slot] of ACTIVITY_PLANNING_CHAIRS.slice(0,extraSeats).entries()){
+  const chair:Furniture={id:`activity-planning-chair-${index}`,kind:'chair',room:'planning',...slot}
+  if(!placementError(chair,furniture))furniture.push(chair)
+ }
+ return {...layout,furniture}
 }
 export function facingTurn(from:number,to:number,max:number){const difference=Math.atan2(Math.sin(to-from),Math.cos(to-from));return Math.max(-max,Math.min(max,difference))}
 export function canGreet(a:{x:number;z:number;room:RoomId;walking:boolean},b:{x:number;z:number;room:RoomId;walking:boolean}){const distance=Math.hypot(a.x-b.x,a.z-b.z);return (a.walking||b.walking)&&a.room===b.room&&distance>.65&&distance<2.4}

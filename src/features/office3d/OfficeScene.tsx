@@ -12,7 +12,8 @@ interface Props {
   onRoom: (room: RoomId) => void; onItem: (id: string) => void; onFurniture: (id: string) => void
   onMove: (f: Furniture) => void; onMessage: (message: string) => void
 }
-type Companion = ReturnType<typeof createCompanion> & { room: RoomId; item?: OfficeItem; base: T.Vector3; phase: number; heading:number; guest?:ConsultationGuest; host?:boolean; key:string; seated:boolean; working:boolean; walking:boolean; greetUntil:number; greetStarted:number; look?:T.Vector3; bubble?:HTMLSpanElement }
+type WorkJourney = { path:[number,number][]; started:number; duration:number; targetHeading:number }
+type Companion = ReturnType<typeof createCompanion> & { room: RoomId; item?: OfficeItem; base: T.Vector3; phase: number; heading:number; guest?:ConsultationGuest; host?:boolean; key:string; seated:boolean; working:boolean; walking:boolean; journey?:WorkJourney; greetUntil:number; greetStarted:number; look?:T.Vector3; bubble?:HTMLSpanElement }
 interface Runtime {
   scene: T.Scene; renderer: T.WebGLRenderer; camera: T.PerspectiveCamera; controls: OrbitControls
   architecture: T.Group; furniture: T.Group; actors: T.Group; companions: Companion[]; light: T.DirectionalLight
@@ -25,6 +26,7 @@ export default function OfficeScene(props: Props) {
   const roomLabels=useRef(new Map<string,HTMLButtonElement>()), actorLabels=useRef(new Map<string,HTMLButtonElement>())
   const [failure,setFailure]=useState(''), [rendered,setRendered]=useState(false)
   const appearances=useRef(new Map<string,number>())
+  const arrivedWork=useRef(new Set<string>())
   const population=props.items.filter(i=>i.kind!=='booking').map(i=>i.id+':'+i.room).join('|')
   live.current=props
   useEffect(()=>{
@@ -76,9 +78,10 @@ export default function OfficeScene(props: Props) {
         }
       }
       // Resolve world poses before detecting encounters; never compare last frame's positions.
-      for(const a of rt.companions){const guest=a.guest
-        a.walking=!!guest&&(guest.phase==='entering'||guest.phase==='leaving');a.seated=!!a.host||!!guest?.seated||(!guest&&a.seated)
-        if(guest){const position=a.walking?pointOnPath(guest.path,(now-guest.phaseStarted)/guest.duration):guest;a.base.set(position.x,a.seated?seatedHeight():.08,position.z);a.heading=position.heading;const actualRoom=ROOMS.find(r=>Math.abs(position.x-r.x)<r.width/2&&Math.abs(position.z-r.z)<r.depth/2);if(actualRoom)a.room=actualRoom.id}
+      for(const a of rt.companions){const guest=a.guest,journey=a.journey
+        a.walking=!!journey||!!guest&&(guest.phase==='entering'||guest.phase==='leaving');a.seated=!!a.host||!!guest?.seated||(!guest&&a.seated)
+        if(journey){const progress=Math.min(1,(time-journey.started)/journey.duration),position=pointOnPath(journey.path,progress);a.base.set(position.x,.08,position.z);a.heading=position.heading;const actualRoom=ROOMS.find(r=>Math.abs(position.x-r.x)<r.width/2&&Math.abs(position.z-r.z)<r.depth/2);if(actualRoom)a.room=actualRoom.id;if(progress>=1){a.journey=undefined;a.walking=false;a.seated=true;a.base.y=seatedHeight();a.heading=journey.targetHeading;if(a.item)arrivedWork.current.add(a.item.id)}}
+        else if(guest){const position=a.walking?pointOnPath(guest.path,(now-guest.phaseStarted)/guest.duration):guest;a.base.set(position.x,a.seated?seatedHeight():.08,position.z);a.heading=position.heading;const actualRoom=ROOMS.find(r=>Math.abs(position.x-r.x)<r.width/2&&Math.abs(position.z-r.z)<r.depth/2);if(actualRoom)a.room=actualRoom.id}
         a.root.position.copy(a.base);a.root.rotation.y=a.heading
         // Move the seated body slightly forward of the backrest, with its underside above the cushion.
         if(a.seated){a.root.position.x+=Math.sin(a.heading)*.12;a.root.position.z+=Math.cos(a.heading)*.12}
@@ -91,7 +94,7 @@ export default function OfficeScene(props: Props) {
         if(greetingCooldown.size>500)for(const [key,until] of greetingCooldown)if(until<t)greetingCooldown.delete(key)
       }
       const inSession=rt.companions.some(a=>a.guest?.phase==='consulting')
-      for(const a of rt.companions){const moving=a.walking,greeting=a.greetUntil>t&&!live.current.reducedMotion&&!live.current.editing,typing=a.working&&!!a.item&&!greeting&&!live.current.editing,chat=(a.host||a.guest?.phase==='consulting')&&inSession
+      for(const a of rt.companions){const moving=a.walking,greeting=a.greetUntil>t&&!live.current.reducedMotion&&!live.current.editing,typing=a.working&&!!a.item&&!moving&&!greeting&&!live.current.editing,chat=(a.host||a.guest?.phase==='consulting')&&inSession
         poseCompanion(a,{t,moving:!!moving,greeting,typing,chat,reducedMotion:live.current.reducedMotion,editing:live.current.editing})
         if(greeting&&!a.bubble){a.bubble=document.createElement('span');a.bubble.className='office3d-greeting';a.bubble.setAttribute('aria-hidden','true');a.bubble.textContent='Hai!';node.append(a.bubble)}
         if(a.bubble){a.bubble.style.display=greeting?'block':'none';if(greeting)project(a.bubble,a.root.position.clone().add(new T.Vector3(0,1.25,0)))}
@@ -109,19 +112,23 @@ export default function OfficeScene(props: Props) {
     for(const item of props.layout.furniture){const model=createFurniture(item.kind,ROOMS.find(r=>r.id===item.room)?.color),seat=bindings.find(b=>b.chairId===item.id),desk=bindings.find(b=>b.deskId===item.id);model.userData.furniture=item.id;model.position.set(seat?.x??item.x,.07,seat?.z??item.z);const table=item.kind==='chair'&&!isServiceFurniture(item.id)?props.layout.furniture.find(f=>f.kind==='table'&&f.room===item.room):undefined;model.rotation.y=seat?.heading??desk?.deskHeading??(table?Math.atan2(table.x-item.x,table.z-item.z):item.rotation);rt.furniture.add(model);rt.objects.set(item.id,model)}
   },[rendered,props.layout.furniture])
   useEffect(()=>{const rt=runtime.current;if(!rt)return;rt.companions.forEach(a=>a.bubble?.remove());for(const child of [...rt.actors.children]){rt.actors.remove(child);disposeTree(child as T.Group)}rt.companions=[]
-    const spawn=(room:RoomId,key:string,x:number,z:number,heading:number,seated:boolean,working:boolean,item?:OfficeItem,host=false,surface?:number)=>{const color=ROOMS.find(r=>r.id===room)!.color,actor=createCompanion(color,avatarVariant(key,appearances.current),!props.reducedMotion);actor.root.position.set(x,seated?seatedHeight(surface):.08,z);actor.root.scale.setScalar(CHARACTER_SCALE);actor.root.userData={...actor.root.userData,room,item:item?.id};rt.actors.add(actor.root);rt.companions.push({...actor,room,key,item,base:actor.root.position.clone(),phase:rt.companions.length*1.6,heading,host,seated,working,walking:false,greetUntil:0,greetStarted:-Infinity})}
+    const activeWorkIds=new Set(props.items.filter(item=>item.room==='studio').map(item=>item.id));for(const id of arrivedWork.current)if(!activeWorkIds.has(id))arrivedWork.current.delete(id)
+    const spawn=(room:RoomId,key:string,x:number,z:number,heading:number,seated:boolean,working:boolean,item?:OfficeItem,host=false,surface?:number,journey?:WorkJourney)=>{const color=ROOMS.find(r=>r.id===room)!.color,actor=createCompanion(color,avatarVariant(key,appearances.current),!props.reducedMotion),start=journey?pointOnPath(journey.path,0):{x,z,heading};actor.root.position.set(start.x,journey ? .08 : seated ? seatedHeight(surface) : .08,start.z);actor.root.scale.setScalar(CHARACTER_SCALE);actor.root.userData={...actor.root.userData,room,item:item?.id};rt.actors.add(actor.root);rt.companions.push({...actor,room,key,item,base:actor.root.position.clone(),phase:rt.companions.length*1.6,heading:start.heading,host,seated:journey?false:seated,working,walking:!!journey,journey,greetUntil:0,greetStarted:-Infinity})}
+    const journeyFor=(item:OfficeItem,x:number,z:number,heading:number,index:number):WorkJourney|undefined=>{if(props.reducedMotion||arrivedWork.current.has(item.id))return undefined;const start:[number,number]=item.kind==='order'?[-.85+(index%3)*.35,4.8]:[2.05+(index%3)*.3,3.15+Math.floor(index/3)*.16],path:[number,number][]=item.kind==='order'?[start,[-2.7,4.8],[-2.7,2.2],[-2.7,1.4],[-2.7,.9],[x,.9],[x,z+1.35],[x,z]]:[start,[3.1,2.7],[3.1,2.2],[3.1,1.4],[x,.9],[x,z+1.35],[x,z]],distance=path.slice(1).reduce((sum,p,pathIndex)=>sum+Math.hypot(p[0]-path[pathIndex][0],p[1]-path[pathIndex][1]),0);return {path,started:performance.now()+Math.min(index,5)*240,duration:Math.max(2600,distance*520),targetHeading:heading}}
     const bindings=workstations(props.layout.furniture)
     for(const room of ROOMS){if(room.id==='waiting')continue
       if(room.id==='consultation'){spawn(room.id,'consultant',CONSULTANT.x,CONSULTANT.z,CONSULTANT.heading,true,false,undefined,true);continue}
       const entries=props.items.filter(i=>i.room===room.id),stations=bindings.filter(b=>props.layout.furniture.find(f=>f.id===b.deskId)?.room===room.id)
-      if(stations.length){for(const [index,station] of stations.slice(0,Math.max(1,entries.length)).entries())spawn(room.id,station.chairId,station.x,station.z,station.heading,true,true,entries[index]);continue}
-      const seats=props.layout.furniture.filter(f=>f.room===room.id&&(f.kind==='chair'||f.kind==='sofa'))
+      if(room.id==='studio'){
+        for(const [index,item] of entries.entries()){const station=stations[index];if(station)spawn(room.id,station.chairId,station.x,station.z,station.heading,true,true,item,false,undefined,journeyFor(item,station.x,station.z,station.heading,index));else spawn(room.id,'studio-overflow-'+item.id,-3.6+(index%4)*2.2,-.25+Math.floor(index/4)*.65,0,false,false,item)}
+        continue
+      }
+      const seats=props.layout.furniture.filter(f=>f.room===room.id&&(f.kind==='chair'||f.kind==='sofa')).flatMap(seat=>seat.kind==='sofa'?[{...seat,id:seat.id+'-left',x:seat.x-.42},{...seat,id:seat.id+'-right',x:seat.x+.42}]:[seat])
       const table=props.layout.furniture.find(f=>f.room===room.id&&f.kind==='table')
-      for(const [index,seat] of seats.slice(0,Math.max(1,Math.min(2,entries.length))).entries()){const heading=table?Math.atan2(table.x-seat.x,table.z-seat.z):seat.rotation;spawn(room.id,seat.id,seat.x,seat.z,heading,true,false,entries[index],false,seat.kind==='sofa'?SOFA_TOP:undefined)}
-      if(!seats.length)spawn(room.id,'idle:'+room.id,room.x,room.z,0,false,false,entries[0])
+      for(const [index,item] of entries.entries()){const seat=seats[index];if(seat){const heading=table?Math.atan2(table.x-seat.x,table.z-seat.z):seat.rotation;spawn(room.id,seat.id,seat.x,seat.z,heading,true,false,item,false,seat.kind==='sofa'?SOFA_TOP:undefined)}else spawn(room.id,room.id+'-overflow-'+item.id,room.x-1.35+(index%4)*.8,room.z+.95-Math.floor(index/4)*.55,0,false,false,item)}
     }
   },[rendered,props.reducedMotion,props.layout.furniture,population])
-  useEffect(()=>{const rt=runtime.current;if(!rt)return;for(const a of rt.companions)if(!a.host&&!a.guest){const entries=props.items.filter(i=>i.room===a.room);const peers=rt.companions.filter(i=>i.room===a.room&&!i.guest);a.item=entries[peers.indexOf(a)];a.root.userData.item=a.item?.id}},[props.items,rendered])
+  useEffect(()=>{const rt=runtime.current;if(!rt)return;for(const a of rt.companions)if(!a.host&&!a.guest&&a.item){a.item=props.items.find(item=>item.id===a.item?.id);a.root.userData.item=a.item?.id}},[props.items,rendered])
   useEffect(()=>{const rt=runtime.current;if(!rt)return;if(rt.selection){rt.scene.remove(rt.selection);rt.selection.geometry.dispose();(rt.selection.material as T.Material).dispose();rt.selection=null}if(props.editing && props.selectedFurniture){const object=rt.objects.get(props.selectedFurniture);if(object){rt.selection=new T.BoxHelper(object,'#4c8fe9');rt.scene.add(rt.selection)}}},[rendered,props.selectedFurniture,props.editing,props.layout.furniture])
   useEffect(()=>{const rt=runtime.current;if(!rt)return;const room=ROOMS.find(r=>r.id===props.room);rt.focus.set(room?.x??CENTER.x,0,room?.z??CENTER.z);rt.focusUntil=performance.now()+1200;if(!room)rt.controls.target.copy(CENTER)},[props.room])
   useEffect(()=>{const rt=runtime.current;if(!rt)return;rt.camera.position.copy(HOME);rt.controls.target.copy(CENTER);rt.controls.update()},[props.reset])
