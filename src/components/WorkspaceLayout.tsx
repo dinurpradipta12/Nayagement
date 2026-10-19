@@ -17,6 +17,8 @@ import {
   Menu,
   Moon,
   MoreHorizontal,
+  PanelLeftClose,
+  PanelLeftOpen,
   Plus,
   PiggyBank,
   Search,
@@ -82,6 +84,7 @@ export function WorkspaceLayout({
   onSignOut,
 }: WorkspaceLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [officeSidebarOpen, setOfficeSidebarOpen] = useState(false)
   const current = route === 'office' ? { label: 'Office 3D' } : navigation.find((item) => item.id === route)
   const navigate = (next: RouteName) => {
     onRouteChange(next)
@@ -91,9 +94,22 @@ export function WorkspaceLayout({
   const countLabel = (count: number) => count > 99 ? '99+' : count
 
   return (
-    <div className="app-canvas">
+    <div className={`app-canvas${route === 'office' ? ` office-immersive-canvas${officeSidebarOpen ? ' office-sidebar-open' : ' office-sidebar-hidden'}` : ''}`}>
+      {route === 'office' && (
+        <button
+          type="button"
+          className="office-sidebar-toggle"
+          aria-label={officeSidebarOpen ? 'Sembunyikan sidebar' : 'Tampilkan sidebar'}
+          aria-controls="workspace-sidebar"
+          aria-expanded={officeSidebarOpen}
+          title={officeSidebarOpen ? 'Sembunyikan sidebar' : 'Tampilkan sidebar'}
+          onClick={() => setOfficeSidebarOpen((value) => !value)}
+        >
+          {officeSidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
+        </button>
+      )}
       <main className="app-shell">
-        <aside className="sidebar">
+        <aside className="sidebar" id="workspace-sidebar" aria-hidden={route === 'office' && !officeSidebarOpen}>
           <div className="sidebar-logo"><Logo /></div>
           <button className="create-project-button" onClick={onOpenProject}>
             <Plus size={18} strokeWidth={2.5} />

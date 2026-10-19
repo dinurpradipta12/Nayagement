@@ -35,3 +35,85 @@
 @media(max-width:1150px){.office3d-workcenter-actions .office3d-local-clock{display:none}.office3d-workcenter-actions .office3d-button-quiet{font-size:0;padding:9px}.office3d-workcenter-actions .office3d-button-quiet svg{margin:0}.office3d-inspector{width:280px}.office3d-status-dock>button{min-width:135px}}
 @media(max-width:850px){.office3d-workcenter-header{align-items:flex-start}.office3d-workcenter-actions{flex-wrap:wrap;justify-content:flex-end}.office3d-stage,.office3d-scene-area{min-height:530px}.office3d-inspector{width:100%;max-height:540px}.office3d-status-dock{border-radius:13px}.office3d-dock-owner{position:sticky;left:-9px;z-index:2;background:var(--surface-bright)}}
 @media(max-width:520px){.office3d-workcenter-header{padding:9px}.office3d-workcenter-brand small{max-width:145px}.office3d-workcenter-actions .office3d-button-quiet{display:none}.office3d-workcenter-logo{width:32px;height:32px;flex-basis:32px}.office3d-workcenter-brand strong{font-size:11px}.office3d-stage,.office3d-scene-area{min-height:440px}.office3d-status-dock{margin-left:-2px;margin-right:-2px}.office3d-status-dock>button{min-width:132px}.office3d-summary>div{padding:11px}}
+
+/* Immersive Office: workspace information lives on the scene instead of above it. */
+@media(min-width:768px){
+  .office3d-immersive{position:relative;width:100%;height:100%;max-width:none;margin:0;padding:0;overflow:hidden}
+  .office3d-immersive .office3d-stage{position:absolute;inset:0;height:100%;min-height:0;border-radius:16px}
+  .office3d-immersive .office3d-scene-area{height:100%;min-height:0;padding:0}
+  .office3d-immersive .office3d-inspector{width:310px;height:100%;max-height:none;padding-top:18px}
+  .office3d-immersive .office3d-scene-top,.office3d-immersive .office3d-scene-footnote,.office3d-immersive .office3d-consultation-live{display:none}
+  .office3d-immersive .office3d-world-hint{bottom:80px}
+
+  .office3d-immersive .office3d-workcenter-header{position:absolute;z-index:12;top:12px;right:326px;left:12px;min-height:48px;margin:0;padding:6px 7px 6px 9px;border-radius:13px;background:color-mix(in srgb,var(--surface-bright) 82%,transparent);box-shadow:0 8px 28px color-mix(in srgb,var(--on-surface) 10%,transparent);backdrop-filter:blur(18px)}
+  .office3d-immersive .office3d-workcenter-logo{width:32px;height:32px;flex-basis:32px;border-radius:9px}
+  .office3d-immersive .office3d-workcenter-brand strong{font-size:11px}
+  .office3d-immersive .office3d-workcenter-brand small{max-width:390px;margin-top:2px;font-size:7px;letter-spacing:.7px}
+  .office3d-immersive .office3d-local-clock{min-height:32px;padding:3px 8px}
+  .office3d-immersive .office3d-local-clock strong{font-size:10px}
+  .office3d-immersive .office3d-local-clock small{display:none}
+  .office3d-immersive .office3d-workcenter-header .office3d-button{min-height:32px;padding:7px 8px;font-size:9px}
+  .office3d-immersive .office3d-workcenter-header .office3d-icon-button{width:32px;height:32px}
+
+  .office3d-immersive .office3d-summary{position:absolute;z-index:11;top:70px;left:12px;display:flex;width:auto;max-width:calc(100% - 710px);gap:6px;margin:0}
+  .office3d-immersive .office3d-summary>div{min-width:102px;gap:7px;padding:6px 9px;border-radius:11px;background:color-mix(in srgb,var(--surface-bright) 82%,transparent);box-shadow:0 6px 20px color-mix(in srgb,var(--on-surface) 7%,transparent);backdrop-filter:blur(16px)}
+  .office3d-immersive .office3d-stat-icon{width:27px;height:27px;border-radius:8px}
+  .office3d-immersive .office3d-stat-icon svg{width:14px;height:14px}
+  .office3d-immersive .office3d-summary strong{font-size:14px;letter-spacing:-.3px}
+  .office3d-immersive .office3d-summary small{margin-top:1px;font-size:7px;white-space:nowrap}
+
+  .office3d-immersive .office3d-toolbar{position:absolute;z-index:11;top:70px;right:326px;display:flex;min-height:41px;gap:8px;padding:5px 6px 5px 10px;border:1px solid var(--office-border);border-radius:11px;background:color-mix(in srgb,var(--surface-bright) 82%,transparent);box-shadow:0 6px 20px color-mix(in srgb,var(--on-surface) 7%,transparent);backdrop-filter:blur(16px)}
+  .office3d-immersive .office3d-view-label{font-size:9px;white-space:nowrap}
+  .office3d-immersive .office3d-view-label small,.office3d-immersive .office3d-toolbar-divider{display:none}
+  .office3d-immersive .office3d-filters select,.office3d-immersive .office3d-filters input{min-height:29px;max-width:128px;padding:5px 7px;background:color-mix(in srgb,var(--surface-bright) 88%,transparent)}
+  .office3d-immersive .office3d-filters .office3d-icon-button{width:29px;height:29px}
+
+  .office3d-immersive .office3d-assets{position:absolute;z-index:15;top:66px;right:326px;left:12px;max-height:180px;margin:0;padding:12px;overflow:auto;background:color-mix(in srgb,var(--surface-bright) 94%,transparent);box-shadow:var(--shadow-2);backdrop-filter:blur(20px)}
+  .office3d-immersive .office3d-message{position:absolute;z-index:15;right:338px;bottom:84px;left:20px;margin:0;background:color-mix(in srgb,var(--primary-container) 92%,transparent);box-shadow:var(--shadow-1);backdrop-filter:blur(14px)}
+  .office3d-immersive .office3d-status-dock{position:absolute;z-index:10;right:326px;bottom:12px;left:12px;min-height:60px;margin:0;padding:6px;border-radius:13px;background:color-mix(in srgb,var(--surface-bright) 84%,transparent);box-shadow:0 9px 30px color-mix(in srgb,var(--on-surface) 10%,transparent);backdrop-filter:blur(18px)}
+  .office3d-immersive .office3d-dock-owner{flex-basis:56px}
+  .office3d-immersive .office3d-dock-owner>span{width:28px;height:28px}
+  .office3d-immersive .office3d-status-dock>button{min-width:118px;padding:5px 7px;background:color-mix(in srgb,var(--surface-container) 84%,transparent)}
+  .office3d-immersive .office3d-dock-avatar{width:29px;height:29px;flex-basis:29px;font-size:8px}
+  .office3d-immersive .office3d-status-dock strong{font-size:7px}
+  .office3d-immersive .office3d-status-dock small{font-size:6px}
+  .office3d-immersive .office3d-edit-bar{bottom:12px}
+}
+
+@media(min-width:768px) and (max-width:1150px){
+  .office3d-immersive .office3d-inspector{width:280px}
+  .office3d-immersive .office3d-workcenter-header,.office3d-immersive .office3d-toolbar,.office3d-immersive .office3d-assets{right:296px}
+  .office3d-immersive .office3d-status-dock{right:296px}
+  .office3d-immersive .office3d-message{right:308px}
+  .office3d-immersive .office3d-summary{max-width:calc(100% - 590px)}
+  .office3d-immersive .office3d-summary>div{min-width:48px}
+  .office3d-immersive .office3d-summary small{display:none}
+  .office3d-immersive .office3d-workcenter-actions .office3d-button{font-size:0;padding:7px}
+  .office3d-immersive .office3d-workcenter-actions .office3d-button svg{margin:0}
+  .office3d-immersive .office3d-toolbar{top:116px;right:auto;left:12px}
+  .office3d-immersive .office3d-summary{max-width:none}
+}
+
+@media(min-width:768px) and (max-width:850px){
+  .office3d-immersive .office3d-stage{flex-direction:row}
+  .office3d-immersive .office3d-scene-area{min-height:0}
+  .office3d-immersive .office3d-inspector{width:250px;max-height:none;border-top:0;border-left:1px solid var(--office-border);padding:14px 11px}
+  .office3d-immersive .office3d-workcenter-header,.office3d-immersive .office3d-assets{right:266px}
+  .office3d-immersive .office3d-status-dock{right:266px}
+  .office3d-immersive .office3d-message{right:278px}
+  .office3d-immersive .office3d-status-dock>button{min-width:96px}
+  .office3d-immersive .office3d-dock-owner{display:none}
+}
+
+@media(max-width:767px){
+  .office3d-immersive{max-width:none;padding-bottom:12px;overflow:visible}
+  .office3d-immersive .office3d-workcenter-header,.office3d-immersive .office3d-summary,.office3d-immersive .office3d-toolbar,.office3d-immersive .office3d-assets,.office3d-immersive .office3d-message,.office3d-immersive .office3d-status-dock{position:static}
+  .office3d-immersive .office3d-consultation-live{display:none}
+  .office3d-immersive .office3d-workcenter-header{margin-bottom:8px}
+  .office3d-immersive .office3d-summary{margin-bottom:8px}
+  .office3d-immersive .office3d-summary>div{box-shadow:none}
+  .office3d-immersive .office3d-toolbar{margin-bottom:8px;padding:8px}
+  .office3d-immersive .office3d-stage{min-height:0}
+  .office3d-immersive .office3d-status-dock{margin-top:8px}
+  .office3d-immersive .office3d-message{margin-top:8px}
+}

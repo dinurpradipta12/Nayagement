@@ -72,9 +72,9 @@ export default function Office3DPage(props: Props) {
     {id:'consultation',room:'consultation',label:'Consultation',caption:'Booking aktif',count:totals.consultation+totals.waiting,color:ROOMS.find(value=>value.id==='consultation')!.color},
     {id:'intake',room:'reception',label:'Front desk',caption:'Order & intake',count:totals.reception,color:ROOMS.find(value=>value.id==='reception')!.color},
   ]
-  return <section className="office3d-root" aria-label="Office 3D">
+  return <section className="office3d-root office3d-immersive" aria-label="Office 3D">
     <header className="office3d-workcenter-header">
-      <div className="office3d-workcenter-brand"><span className="office3d-workcenter-logo"><Box size={18}/></span><span><strong>Nayagement Work Center</strong><small>Office 3D · {items.length} aktivitas workspace live</small></span></div>
+      <div className="office3d-workcenter-brand"><span className="office3d-workcenter-logo"><Box size={18}/></span><span><strong>Nayagement Work Center</strong><small>{items.length} aktivitas · {guests.filter(g=>g.phase==='waiting').length} menunggu · {guests.filter(g=>g.phase==='consulting'||g.phase==='entering').length} konsultasi</small></span></div>
       <div className="office3d-workcenter-actions">
         <span className="office3d-local-clock"><Clock3 size={16}/><span><strong>{new Intl.DateTimeFormat('id-ID',{hour:'2-digit',minute:'2-digit'}).format(now).replace('.',':')}</strong><small>Waktu lokal</small></span></span>
         <button className="office3d-button office3d-button-quiet" onClick={()=>props.onRoute('dashboard')}><LayoutDashboard size={15}/> Dashboard</button>
@@ -117,7 +117,7 @@ export default function Office3DPage(props: Props) {
       </aside>
     </div>
     {message&&<div className="office3d-message" role="status">{message}<button aria-label="Tutup pesan" onClick={()=>setMessage('')}><X size={14}/></button></div>}
-    <div className="office3d-status-dock" aria-label="Filter karakter dan aktivitas berdasarkan status"><div className="office3d-dock-owner"><span><UsersRound size={17}/></span><small>Live team</small></div>{statusDock.map(entry=><button key={entry.id} className={room===entry.room?'selected':''} onClick={()=>entry.room?chooseRoom(entry.room):(setRoom(null),setSelected(null))}><span className="office3d-dock-avatar" style={{'--dock-color':entry.color} as React.CSSProperties}>{entry.count}</span><span><strong>{entry.label}</strong><small>{entry.caption}</small></span></button>)}</div>
+    {!editing&&<div className="office3d-status-dock" aria-label="Filter karakter dan aktivitas berdasarkan status"><div className="office3d-dock-owner"><span><UsersRound size={17}/></span><small>Live team</small></div>{statusDock.map(entry=><button key={entry.id} className={room===entry.room?'selected':''} onClick={()=>entry.room?chooseRoom(entry.room):(setRoom(null),setSelected(null))}><span className="office3d-dock-avatar" style={{'--dock-color':entry.color} as React.CSSProperties}>{entry.count}</span><span><strong>{entry.label}</strong><small>{entry.caption}</small></span></button>)}</div>}
     {task&&<TaskDetailDrawer task={task} project={props.projects.find((p:Project)=>p.id===task.projectId)} loading={taskLoading} error={taskError} onClose={()=>{request.current++;setTask(null);setTaskLoading(false)}} onOpenProject={props.onOpenProject} onSave={async(t,input)=>{const saved=await props.onSaveTaskDetail(t,input);setTask(saved);return saved}} onAddNote={async(t,body)=>{await props.onAddTaskNote(t,body);await refreshTask(t)}} onUploadAttachment={async(t,file)=>{await props.onUploadTaskAttachment(t,file);await refreshTask(t)}} onDeleteAttachment={async(t,file)=>{await props.onDeleteTaskAttachment(t,file);await refreshTask(t)}}/>}
   </section>
 }

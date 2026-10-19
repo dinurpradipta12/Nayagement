@@ -2198,6 +2198,132 @@ body.settings-hide-breadcrumbs .breadcrumb { visibility: hidden; } body.settings
   .public-order-footer { margin-bottom: 10px; text-align: center; }
 }
 
+/* Office 3D uses the shell as an immersive workspace without changing other routes. */
+.office-sidebar-toggle { display: none; }
+
+@media (min-width: 768px) {
+  .office-immersive-canvas {
+    --canvas-inset: 8px;
+    position: relative;
+  }
+
+  .office-immersive-canvas .app-shell {
+    height: calc(100dvh - 16px);
+    border-radius: 22px;
+    transition: grid-template-columns .26s cubic-bezier(.22, .8, .2, 1);
+  }
+
+  .office-immersive-canvas.office-sidebar-open .app-shell {
+    grid-template-columns: 242px minmax(0, 1fr);
+  }
+
+  .office-immersive-canvas.office-sidebar-hidden .app-shell {
+    grid-template-columns: 0 minmax(0, 1fr);
+  }
+
+  .office-immersive-canvas .sidebar {
+    transition: padding .24s ease, opacity .18s ease, transform .24s ease, visibility 0s linear 0s;
+  }
+
+  .office-immersive-canvas.office-sidebar-hidden .sidebar {
+    min-width: 0;
+    padding: 0;
+    border-right-width: 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-18px);
+    pointer-events: none;
+    transition: padding .24s ease, opacity .16s ease, transform .24s ease, visibility 0s linear .24s;
+  }
+
+  .office-immersive-canvas .workspace-content {
+    grid-template-rows: 58px minmax(0, 1fr);
+  }
+
+  .office-immersive-canvas .desktop-topbar {
+    height: 58px;
+    padding-right: 18px;
+    padding-left: 22px;
+  }
+
+  .office-immersive-canvas.office-sidebar-hidden .desktop-topbar {
+    padding-left: 57px;
+  }
+
+  .office-immersive-canvas .page-content {
+    overflow: hidden;
+    padding: 8px;
+    scrollbar-gutter: auto;
+  }
+
+  .office-sidebar-toggle {
+    position: absolute;
+    z-index: 40;
+    top: 18px;
+    left: 20px;
+    display: grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    padding: 0;
+    border: 1px solid var(--outline);
+    border-radius: 10px;
+    color: var(--on-surface-soft);
+    background: color-mix(in srgb, var(--surface-bright) 90%, transparent);
+    box-shadow: var(--shadow-1);
+    backdrop-filter: blur(14px);
+    transition: left .26s cubic-bezier(.22, .8, .2, 1), color .16s ease, background .16s ease;
+  }
+
+  .office-sidebar-toggle:hover {
+    color: var(--primary);
+    background: var(--primary-container);
+  }
+
+  .office-immersive-canvas.office-sidebar-open .office-sidebar-toggle {
+    left: 232px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .office-immersive-canvas.office-sidebar-open .app-shell {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+
+  .office-immersive-canvas.office-sidebar-open .sidebar {
+    align-items: stretch;
+    padding: 20px 12px 14px;
+  }
+
+  .office-immersive-canvas.office-sidebar-open .sidebar-logo {
+    padding: 0 8px 22px;
+  }
+
+  .office-immersive-canvas.office-sidebar-open .sidebar .brand-word,
+  .office-immersive-canvas.office-sidebar-open .sidebar .create-project-button span,
+  .office-immersive-canvas.office-sidebar-open .nav-item span:not(.nav-count),
+  .office-immersive-canvas.office-sidebar-open .nav-section-title,
+  .office-immersive-canvas.office-sidebar-open .user-card > span:not(.avatar),
+  .office-immersive-canvas.office-sidebar-open .user-card > svg {
+    display: initial;
+  }
+
+  .office-immersive-canvas.office-sidebar-open .sidebar .create-project-button,
+  .office-immersive-canvas.office-sidebar-open .nav-item {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 0 11px;
+  }
+
+  .office-immersive-canvas.office-sidebar-open .sidebar .create-project-button {
+    margin: 0 0 21px;
+  }
+
+  .office-immersive-canvas.office-sidebar-open .office-sidebar-toggle {
+    left: 210px;
+  }
+}
+
 @media (max-width: 767px) {
   .personal-finance-page .page-title-row { align-items: stretch; }
   .personal-finance-page .page-title-row .primary-button { width: 100%; }
