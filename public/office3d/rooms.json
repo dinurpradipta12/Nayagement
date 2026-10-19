@@ -1,0 +1,119 @@
+[
+  {
+    "id": "studio",
+    "name": "Studio kerja",
+    "subtitle": "Open office di pusat denah",
+    "color": "#6b9be8",
+    "x": 0.25,
+    "z": -2,
+    "width": 9.5,
+    "depth": 8,
+    "doorX": -2.7,
+    "doorZ": 2,
+    "doorSide": "south",
+    "doors": [
+      {
+        "x": -4.5,
+        "z": -2,
+        "side": "west"
+      },
+      {
+        "x": -4.5,
+        "z": 0.5,
+        "side": "west"
+      },
+      {
+        "x": 5,
+        "z": -3.7,
+        "side": "east"
+      },
+      {
+        "x": 5,
+        "z": 1,
+        "side": "east"
+      },
+      {
+        "x": 3.1,
+        "z": 2,
+        "side": "south"
+      }
+    ]
+  },
+  {
+    "id": "waiting",
+    "name": "Ruang tunggu",
+    "subtitle": "Lounge kiri atas",
+    "color": "#87b7c5",
+    "x": -7.1,
+    "z": -3.6,
+    "width": 4.8,
+    "depth": 4.8,
+    "doorX": -4.7,
+    "doorZ": -2,
+    "doorSide": "east"
+  },
+  {
+    "id": "review",
+    "name": "Ruang review",
+    "subtitle": "Rapat kanan atas",
+    "color": "#a18bdd",
+    "x": 7.2,
+    "z": -4.35,
+    "width": 4,
+    "depth": 3.3,
+    "doorX": 5.2,
+    "doorZ": -3.7,
+    "doorSide": "west"
+  },
+  {
+    "id": "consultation",
+    "name": "Bilik konsultasi",
+    "subtitle": "Ruang privat di kanan",
+    "color": "#dba286",
+    "x": 7.2,
+    "z": -0.15,
+    "width": 4,
+    "depth": 4.7,
+    "doorX": 5.2,
+    "doorZ": 1,
+    "doorSide": "west"
+  },
+  {
+    "id": "reception",
+    "name": "Resepsionis",
+    "subtitle": "Pintu masuk depan",
+    "color": "#d5b965",
+    "x": -1.9,
+    "z": 4.1,
+    "width": 5.2,
+    "depth": 3.8,
+    "doorX": -2.7,
+    "doorZ": 2.2,
+    "doorSide": "north",
+    "doors": [
+      {
+        "x": -2.7,
+        "z": 6,
+        "side": "south"
+      },
+      {
+        "x": -4.5,
+        "z": 3.2,
+        "side": "west"
+      }
+    ]
+  },
+  {
+    "id": "planning",
+    "name": "Planning lounge",
+    "subtitle": "Ruang depan kanan",
+    "color": "#75b9a5",
+    "x": 2.95,
+    "z": 4.1,
+    "width": 4.1,
+    "depth": 3.8,
+    "doorX": 3.1,
+    "doorZ": 2.2,
+    "doorSide": "north"
+  }
+]

@@ -1,0 +1,53 @@
+{
+  "note": "Visual avatar presets only; not inferred personal gender data.",
+  "styles": [
+    {
+      "gender": "male",
+      "hair": "crop"
+    },
+    {
+      "gender": "female",
+      "hair": "bob"
+    },
+    {
+      "gender": "male",
+      "hair": "side-part"
+    },
+    {
+      "gender": "female",
+      "hair": "ponytail"
+    },
+    {
+      "gender": "male",
+      "hair": "quiff"
+    },
+    {
+      "gender": "female",
+      "hair": "bun"
+    },
+    {
+      "gender": "male",
+      "hair": "curls"
+    },
+    {
+      "gender": "female",
+      "hair": "pixie"
+    },
+    {
+      "gender": "male",
+      "hair": "swept"
+    },
+    {
+      "gender": "female",
+      "hair": "waves"
+    },
+    {
+      "gender": "male",
+      "hair": "textured"
+    },
+    {
+      "gender": "female",
+      "hair": "braid"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { WorkspaceLayout } from './components/WorkspaceLayout'
 import { AppUpdatePrompt } from './components/AppUpdatePrompt'
 import { ProjectFormModal } from './components/ProjectFormModal'
@@ -69,9 +69,11 @@ import {
 } from './services/workspaceData'
 import type { AppNotification, Client, ClientFormData, ClientProfileFormData, ConsultationBooking, Invoice, InvoiceDocumentStatus, InvoiceEditorDraft, OrderSubmission, OrderSubmissionStatus, Project, ProjectFormData, ProjectPayment, ProjectPaymentInput, RouteName, ServiceCatalog, ServiceCatalogInput, ServiceQuote, ServiceQuoteDraft, SettingsProfile, SettingsSnapshot, Task, TaskAttachment, TaskDetailInput, TimelineItem, ToastMessage } from './types'
 
+const Office3DPage = lazy(() => import('./pages/Office3DPage'))
+
 const demoSessionKey = 'nayagement-demo-session'
 const themeKey = 'nayagement-theme'
-const routeNames: RouteName[] = ['dashboard', 'projects', 'tasks', 'calendar', 'clients', 'content-plan', 'finance', 'invoices', 'forms', 'orders', 'bookings', 'personal-finance', 'notifications', 'settings']
+const routeNames: RouteName[] = ['office', 'dashboard', 'projects', 'tasks', 'calendar', 'clients', 'content-plan', 'finance', 'invoices', 'forms', 'orders', 'bookings', 'personal-finance', 'notifications', 'settings']
 const accentOptions: Project['accent'][] = ['blue', 'violet', 'peach', 'mint', 'pink']
 
 const getHash = () => window.location.hash.replace(/^#/, '') || '/dashboard'
@@ -1292,6 +1294,14 @@ export default function App() {
   let page: JSX.Element
 
   switch (route) {
+    case 'office':
+      page = <Suspense fallback={<div className="empty-state"><strong>Menyiapkan kantor 3D…</strong><p>Ruang kerja Anda sedang dibuka.</p></div>}><Office3DPage
+        workspaceId={workspaceId} userId={sidebarProfile.id} dark={dark} reducedMotion={settingsSnapshot?.preferences.reduceAnimations ?? false}
+        projects={projects} tasks={tasks} bookings={consultationBookings} clients={clients} invoices={invoices} orders={orderSubmissions} timelines={timelines}
+        onRoute={navigate} onOpenProject={(id) => { const project = projects.find(p => p.id === id); if (project) openProjectDetail(project); else navigate('projects') }}
+        onLoadTaskDetail={loadTaskDetail} onSaveTaskDetail={saveTaskDetail} onAddTaskNote={addTaskNote} onUploadTaskAttachment={addTaskAttachment} onDeleteTaskAttachment={removeTaskAttachment}
+      /></Suspense>
+      break
     case 'projects': {
       const project = projectDetailId ? projects.find((item) => item.id === projectDetailId) : null
       if (projectDetailId && !project) {

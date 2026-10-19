@@ -1,0 +1,257 @@
+{
+  "version": 1,
+  "plan": 3,
+  "furniture": [
+    {
+      "id": "desk-1",
+      "kind": "desk",
+      "room": "studio",
+      "x": -1.5,
+      "z": -4.8,
+      "rotation": 0
+    },
+    {
+      "id": "chair-1",
+      "kind": "chair",
+      "room": "studio",
+      "x": -1.5,
+      "z": -3.8,
+      "rotation": 0
+    },
+    {
+      "id": "desk-2",
+      "kind": "desk",
+      "room": "studio",
+      "x": 1.5,
+      "z": -4.8,
+      "rotation": 0
+    },
+    {
+      "id": "chair-2",
+      "kind": "chair",
+      "room": "studio",
+      "x": 1.5,
+      "z": -3.8,
+      "rotation": 0
+    },
+    {
+      "id": "desk-3",
+      "kind": "desk",
+      "room": "studio",
+      "x": -1.5,
+      "z": -2.3,
+      "rotation": 0
+    },
+    {
+      "id": "chair-3",
+      "kind": "chair",
+      "room": "studio",
+      "x": -1.5,
+      "z": -1.3,
+      "rotation": 0
+    },
+    {
+      "id": "desk-4",
+      "kind": "desk",
+      "room": "studio",
+      "x": 1.5,
+      "z": -2.3,
+      "rotation": 0
+    },
+    {
+      "id": "chair-4",
+      "kind": "chair",
+      "room": "studio",
+      "x": 1.5,
+      "z": -1.3,
+      "rotation": 0
+    },
+    {
+      "id": "shelf-1",
+      "kind": "shelf",
+      "room": "studio",
+      "x": 0.1,
+      "z": -5.6,
+      "rotation": 0
+    },
+    {
+      "id": "plant-1",
+      "kind": "plant",
+      "room": "studio",
+      "x": -3.7,
+      "z": -5.3,
+      "rotation": 0
+    },
+    {
+      "id": "review-table",
+      "kind": "table",
+      "room": "review",
+      "x": 7.3,
+      "z": -4.9,
+      "rotation": 0
+    },
+    {
+      "id": "review-chair-1",
+      "kind": "chair",
+      "room": "review",
+      "x": 6,
+      "z": -4.9,
+      "rotation": 1.5707963267948966
+    },
+    {
+      "id": "review-chair-2",
+      "kind": "chair",
+      "room": "review",
+      "x": 8.5,
+      "z": -4.9,
+      "rotation": -1.5707963267948966
+    },
+    {
+      "id": "planning-sofa",
+      "kind": "sofa",
+      "room": "planning",
+      "x": 2.4,
+      "z": 4,
+      "rotation": 0
+    },
+    {
+      "id": "planning-table",
+      "kind": "table",
+      "room": "planning",
+      "x": 2.4,
+      "z": 5.2,
+      "rotation": 0
+    },
+    {
+      "id": "planning-board",
+      "kind": "board",
+      "room": "planning",
+      "x": 4.4,
+      "z": 4.4,
+      "rotation": 1.5707963267948966
+    },
+    {
+      "id": "reception-desk",
+      "kind": "desk",
+      "room": "reception",
+      "x": -0.5,
+      "z": 4.2,
+      "rotation": 0
+    },
+    {
+      "id": "reception-chair",
+      "kind": "chair",
+      "room": "reception",
+      "x": -0.5,
+      "z": 3.2,
+      "rotation": 3.141592653589793
+    },
+    {
+      "id": "reception-plant",
+      "kind": "plant",
+      "room": "reception",
+      "x": -3.8,
+      "z": 5.2,
+      "rotation": 0
+    },
+    {
+      "id": "consult-plant",
+      "kind": "plant",
+      "room": "consultation",
+      "x": 8.6,
+      "z": -2,
+      "rotation": 0
+    },
+    {
+      "id": "service-table",
+      "kind": "table",
+      "room": "consultation",
+      "x": 7.4,
+      "z": -0.8,
+      "rotation": 0
+    },
+    {
+      "id": "service-host",
+      "kind": "chair",
+      "room": "consultation",
+      "x": 8.6,
+      "z": -0.8,
+      "rotation": -1.5707963267948966
+    },
+    {
+      "id": "service-guest",
+      "kind": "chair",
+      "room": "consultation",
+      "x": 6.1,
+      "z": -0.8,
+      "rotation": 1.5707963267948966
+    },
+    {
+      "id": "service-wait-0",
+      "kind": "chair",
+      "room": "waiting",
+      "x": -8.6,
+      "z": -5.3,
+      "rotation": 1.5707963267948966
+    },
+    {
+      "id": "service-wait-1",
+      "kind": "chair",
+      "room": "waiting",
+      "x": -5.6,
+      "z": -5.3,
+      "rotation": -1.5707963267948966
+    },
+    {
+      "id": "service-wait-2",
+      "kind": "chair",
+      "room": "waiting",
+      "x": -8.6,
+      "z": -4.5,
+      "rotation": 1.5707963267948966
+    },
+    {
+      "id": "service-wait-3",
+      "kind": "chair",
+      "room": "waiting",
+      "x": -5.6,
+      "z": -4.5,
+      "rotation": -1.5707963267948966
+    },
+    {
+      "id": "service-wait-4",
+      "kind": "chair",
+      "room": "waiting",
+      "x": -8.6,
+      "z": -3.7,
+      "rotation": 1.5707963267948966
+    },
+    {
+      "id": "service-wait-5",
+      "kind": "chair",
+      "room": "waiting",
+      "x": -5.6,
+      "z": -3.7,
+      "rotation": -1.5707963267948966
+    },
+    {
+      "id": "service-wait-6",
+      "kind": "chair",
+      "room": "waiting",
+      "x": -8.6,
+      "z": -2.9,
+      "rotation": 1.5707963267948966
+    },
+    {
+      "id": "service-wait-7",
+      "kind": "chair",
+      "room": "waiting",
+      "x": -5.6,
+      "z": -2.9,
+      "rotation": -1.5707963267948966
+    }
+  ],
+  "floor": "#bda58b",
+  "wall": "#e5e7ed",
+  "daylight": 16
+}

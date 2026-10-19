@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "lint": "tsc --noEmit",
     "seed:supabase": "node --env-file=supabase/.env.local scripts/seed-supabase.mjs",
-    "clear:demo": "node --env-file=supabase/.env.local scripts/clear-supabase-demo.mjs"
+    "clear:demo": "node --env-file=supabase/.env.local scripts/clear-supabase-demo.mjs",
+    "test:office3d": "node scripts/test-office3d.mjs",
+    "assets:office3d": "node scripts/generate-office-assets.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.4",
@@ -17,13 +19,15 @@
     "jspdf": "^4.2.1",
     "lucide-react": "^0.468.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "three": "0.170.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
     "typescript": "^5.6.3",
-    "vite": "^6.0.1"
+    "vite": "^6.0.1",
+    "@types/three": "0.170.0"
   }
 }

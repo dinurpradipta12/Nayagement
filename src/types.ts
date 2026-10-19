@@ -568,6 +568,7 @@ export interface NavItem {
 }
 
 export type RouteName =
+  | 'office'
   | 'dashboard'
   | 'projects'
   | 'tasks'

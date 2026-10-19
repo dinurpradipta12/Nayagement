@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import {
   Bell,
+  Box,
   CalendarDays,
   CalendarCheck2,
   ChevronDown,
@@ -81,7 +82,7 @@ export function WorkspaceLayout({
   onSignOut,
 }: WorkspaceLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const current = navigation.find((item) => item.id === route)
+  const current = route === 'office' ? { label: 'Office 3D' } : navigation.find((item) => item.id === route)
   const navigate = (next: RouteName) => {
     onRouteChange(next)
     setMobileMenuOpen(false)
@@ -100,6 +101,7 @@ export function WorkspaceLayout({
           </button>
           <nav className="side-nav" aria-label="Navigasi utama">
             <p className="nav-section-title">Ruang kerja</p>
+            <button className={`nav-item ${route === 'office' ? 'active' : ''}`} onClick={() => navigate('office')}><Box size={18} strokeWidth={route === 'office' ? 2.4 : 2} /><span>Office 3D</span></button>
             {workspaceNavigation.map(({ id, label, icon: Icon }) => (
               <button key={id} className={`nav-item ${route === id ? 'active' : ''}`} onClick={() => navigate(id)}>
                 <Icon size={18} strokeWidth={route === id ? 2.4 : 2} />
@@ -188,6 +190,7 @@ export function WorkspaceLayout({
             <IconButton label="Tutup menu" onClick={() => setMobileMenuOpen(false)}><X size={18} /></IconButton>
           </div>
           <div className="mobile-menu-list">
+            <button className={route === 'office' ? 'active' : ''} onClick={() => navigate('office')}><span className="mobile-menu-icon"><Box size={19} /></span>Office 3D</button>
             {navigation.slice(4).map(({ id, label, icon: Icon }) => (
               <button key={id} className={route === id ? 'active' : ''} onClick={() => navigate(id)}>
                 <span className="mobile-menu-icon"><Icon size={19} /></span>{label}
