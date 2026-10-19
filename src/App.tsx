@@ -1402,7 +1402,7 @@ export default function App() {
       page = <SettingsPage workspaceId={workspaceId} dark={dark} initialSettings={settingsSnapshot} onApplyTheme={(theme) => setDark(theme === 'system' ? window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false : theme === 'dark')} onSettingsSaved={(settings) => { setSettingsSnapshot(settings); setSidebarProfile(settings.profile) }} onToast={notify} />
       break
     default:
-      page = <DashboardPage projects={projects} tasks={tasks} payments={payments} clients={clients} invoices={invoices} consultationBookings={consultationBookings} userName={sidebarProfile.displayName || sidebarProfile.fullName} dark={dark} onOpenProject={openProjectForm} onOpenProjects={() => navigate('projects')} onOpenCalendar={() => navigate('calendar')} onOpenClients={() => navigate('clients')} onOpenFinance={() => navigate('finance')} onOpenTasks={() => navigate('tasks')} onToggleTask={toggleTask} />
+      page = <DashboardPage projects={projects} tasks={tasks} payments={payments} clients={clients} invoices={invoices} consultationBookings={consultationBookings} userName={sidebarProfile.displayName || sidebarProfile.fullName} onOpenProject={openProjectForm} onOpenProjects={() => navigate('projects')} onOpenCalendar={() => navigate('calendar')} onOpenClients={() => navigate('clients')} onOpenFinance={() => navigate('finance')} onToggleTask={toggleTask} />
   }
 
   const publicPortalRoute = parsePublicPortalRoute(hash)

@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment } from 'react'
 import type { CSSProperties } from 'react'
 import {
   ArrowDownRight,
@@ -9,21 +9,14 @@ import {
   CircleAlert,
   CircleDollarSign,
   Clock3,
-  Expand,
   FolderKanban,
-  ListChecks,
-  LocateFixed,
   Plus,
-  RotateCcw,
   Target,
   TrendingUp,
-  UsersRound,
 } from 'lucide-react'
 import type { Client, ConsultationBooking, Invoice, Project, ProjectPayment, Task } from '../types'
 import { deadlineLabel, initials, rupiah } from '../lib/format'
 import { Avatar, PriorityDot, ProgressBar, ProgressRing } from '../components/ui'
-import { WorkCenterScene } from '../features/dashboard3d/WorkCenterScene'
-import '../styles/dashboard3d.css'
 
 interface DashboardPageProps {
   projects: Project[]
@@ -33,13 +26,11 @@ interface DashboardPageProps {
   invoices: Invoice[]
   consultationBookings: ConsultationBooking[]
   userName: string
-  dark: boolean
   onOpenProject: () => void
   onOpenProjects: () => void
   onOpenCalendar: () => void
   onOpenClients: () => void
   onOpenFinance: () => void
-  onOpenTasks: () => void
   onToggleTask: (id: string) => void
 }
 
@@ -82,20 +73,13 @@ export function DashboardPage({
   invoices,
   consultationBookings,
   userName,
-  dark,
   onOpenProject,
   onOpenProjects,
   onOpenCalendar,
   onOpenClients,
   onOpenFinance,
-  onOpenTasks,
   onToggleTask,
 }: DashboardPageProps) {
-  const [workCenterTab, setWorkCenterTab] = useState<'today' | 'projects' | 'review'>('today')
-  const [taskStatusFilter, setTaskStatusFilter] = useState<Task['status'] | 'All'>('All')
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
-  const [sceneResetKey, setSceneResetKey] = useState(0)
-  const [sceneExpanded, setSceneExpanded] = useState(false)
   const now = new Date()
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const activeProjects = projects.filter((project) => ['In Progress', 'Review', 'Confirmed'].includes(project.status))
@@ -212,91 +196,8 @@ export function DashboardPage({
     ? 'Belum ada pembanding bulan lalu'
     : `${Math.abs(revenueChange)}% dari bulan lalu`
 
-  const selectedTask = tasks.find((task) => task.id === selectedTaskId) ?? null
-  const liveTasks = useMemo(() => tasks.filter((task) => task.status !== 'Completed'), [tasks])
-  const statusCounts = useMemo(() => ({
-    Todo: tasks.filter((task) => task.status === 'Todo').length,
-    'In Progress': tasks.filter((task) => task.status === 'In Progress').length,
-    Review: tasks.filter((task) => task.status === 'Review').length,
-    Completed: tasks.filter((task) => task.status === 'Completed').length,
-  }), [tasks])
-  const overdueTasks = tasks.filter((task) => {
-    const due = safeDate(task.dueAt)
-    return task.status !== 'Completed' && due !== null && due < todayStart
-  })
-  const workCenterTasks = (workCenterTab === 'review'
-    ? tasks.filter((task) => task.status === 'Review')
-    : workCenterTab === 'projects'
-      ? tasks.filter((task) => task.status !== 'Completed' && activeProjects.some((project) => project.id === task.projectId || project.name === task.project))
-      : [...liveTasks].sort((left, right) => {
-        const leftDate = safeDate(left.dueAt)?.getTime() ?? Number.POSITIVE_INFINITY
-        const rightDate = safeDate(right.dueAt)?.getTime() ?? Number.POSITIVE_INFINITY
-        return leftDate - rightDate
-      })).slice(0, 5)
-  const visibleSceneTasks = tasks.filter((task) => taskStatusFilter === 'All' || task.status === taskStatusFilter)
-  const workCenterDate = new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'long' }).format(now)
-
   return (
     <div className="dashboard-page">
-      <section className={`work-center-dashboard ${sceneExpanded ? 'is-expanded' : ''}`} aria-labelledby="work-center-title">
-        <header className="work-center-header">
-          <div className="work-center-brand">
-            <span className="work-center-mark"><span /><span /><span /></span>
-            <div><h1 id="work-center-title">Nayagement Work Center</h1><p>Workspace hidup · {liveTasks.length} task aktif · {activeProjects.length} proyek berjalan</p></div>
-          </div>
-          <div className="work-center-header-tools">
-            <span className="work-center-clock"><Clock3 size={17} /><span><strong>{new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit' }).format(now).replace('.', ':')}</strong><small>{workCenterDate}</small></span></span>
-            <button type="button" onClick={() => setSceneResetKey((value) => value + 1)} title="Reset kamera" aria-label="Reset kamera 3D"><RotateCcw size={17} /></button>
-            <button type="button" onClick={() => setSceneExpanded((value) => !value)} title={sceneExpanded ? 'Keluar layar penuh' : 'Perbesar Work Center'} aria-label={sceneExpanded ? 'Keluar dari tampilan besar' : 'Perbesar Work Center'}><Expand size={17} /></button>
-          </div>
-        </header>
-
-        <div className="work-center-body">
-          <div className="work-center-scene">
-            <div className="work-center-scene-badge"><span /> LIVE WORKSPACE</div>
-            <WorkCenterScene tasks={visibleSceneTasks} dark={dark} selectedTaskId={selectedTaskId} statusFilter={taskStatusFilter} onSelectTask={(task) => setSelectedTaskId(task.id)} resetKey={sceneResetKey} />
-            {!tasks.length ? <div className="work-center-scene-empty"><UsersRound size={25} /><strong>Kantor masih tenang</strong><span>Karakter akan hadir otomatis saat task dibuat.</span><button type="button" onClick={onOpenTasks}>Buat task pertama</button></div> : null}
-            <div className="work-center-scene-help">Drag untuk memutar · scroll untuk zoom · klik karakter untuk detail task</div>
-          </div>
-
-          <aside className="work-center-panel" aria-label="Ringkasan Work Center">
-            <div className="work-center-panel-heading"><div><p><span /> Work center</p><strong>Aktivitas workspace</strong><small>{liveTasks.length} aktif · {statusCounts.Review} perlu review</small></div><button type="button" onClick={onOpenCalendar} aria-label="Buka kalender"><CalendarClock size={18} /></button></div>
-            <div className="work-center-tabs" role="tablist" aria-label="Kategori Work Center">
-              <button type="button" role="tab" aria-selected={workCenterTab === 'today'} className={workCenterTab === 'today' ? 'active' : ''} onClick={() => setWorkCenterTab('today')}>Hari ini</button>
-              <button type="button" role="tab" aria-selected={workCenterTab === 'projects'} className={workCenterTab === 'projects' ? 'active' : ''} onClick={() => setWorkCenterTab('projects')}>Projects</button>
-              <button type="button" role="tab" aria-selected={workCenterTab === 'review'} className={workCenterTab === 'review' ? 'active' : ''} onClick={() => setWorkCenterTab('review')}>Review</button>
-            </div>
-
-            {selectedTask ? <div className="work-center-selected">
-              <button type="button" className="work-center-selected-close" aria-label="Tutup detail task" onClick={() => setSelectedTaskId(null)}>×</button>
-              <span className={`work-center-status status-${selectedTask.status.toLowerCase().replace(' ', '-')}`}>{selectedTask.status}</span>
-              <strong>{selectedTask.name}</strong><p>{selectedTask.project || 'Task workspace'}</p>
-              <div><span>Deadline</span><b>{selectedTask.dueAt ? deadlineLabel(selectedTask.dueAt) : selectedTask.due || 'Belum dijadwalkan'}</b></div>
-              <button type="button" onClick={() => onToggleTask(selectedTask.id)}>{selectedTask.status === 'Completed' ? 'Aktifkan kembali' : 'Tandai selesai'} <CheckCircle2 size={15} /></button>
-            </div> : <>
-              <div className="work-center-summary-card"><p>Ringkasan tim digital</p><strong>{liveTasks.length ? `${liveTasks.length} aktivitas sedang bergerak` : 'Semua task sudah tenang'}</strong><span>{overdueTasks.length ? `${overdueTasks.length} task melewati deadline dan perlu perhatian.` : 'Tidak ada task terlambat saat ini.'}</span></div>
-              <div className="work-center-metrics">
-                <button type="button" onClick={() => setTaskStatusFilter('In Progress')}><UsersRound size={17} /><strong>{statusCounts['In Progress']}</strong><span>Dikerjakan</span></button>
-                <button type="button" onClick={() => onOpenTasks()}><ListChecks size={17} /><strong>{liveTasks.length}</strong><span>Task aktif</span></button>
-                <button type="button" onClick={() => setTaskStatusFilter('Review')}><CircleAlert size={17} /><strong>{statusCounts.Review}</strong><span>Review</span></button>
-                <button type="button" onClick={() => setTaskStatusFilter('Completed')}><CheckCircle2 size={17} /><strong>{statusCounts.Completed}</strong><span>Selesai</span></button>
-              </div>
-              <div className="work-center-priority-heading"><strong>{workCenterTab === 'review' ? 'Menunggu review' : workCenterTab === 'projects' ? 'Task proyek aktif' : 'Prioritas aktif'}</strong><button type="button" onClick={onOpenTasks}>Lihat semua</button></div>
-              <div className="work-center-priorities">
-                {workCenterTasks.length ? workCenterTasks.map((task, index) => <button type="button" key={task.id} onClick={() => setSelectedTaskId(task.id)}><span>{index + 1}</span><span><strong>{task.name}</strong><small>{task.project || 'Task workspace'}</small></span><em>{task.status}</em></button>) : <p>Tidak ada task pada kategori ini.</p>}
-              </div>
-              <div className="work-center-quick-links"><button type="button" onClick={onOpenCalendar}><CalendarClock size={16} /><span>Timeline<strong>Lihat agenda</strong></span><ChevronRight size={14} /></button><button type="button" onClick={onOpenProjects}><FolderKanban size={16} /><span>Projects<strong>{activeProjects.length} berjalan</strong></span><ChevronRight size={14} /></button></div>
-            </>}
-          </aside>
-        </div>
-
-        <footer className="work-center-dock" aria-label="Filter karakter berdasarkan status task">
-          <button type="button" className={taskStatusFilter === 'All' ? 'active' : ''} onClick={() => setTaskStatusFilter('All')}><span className="dock-avatar dock-all"><LocateFixed size={17} /></span><span><strong>Semua karakter</strong><small>{tasks.length} task</small></span></button>
-          {(['Todo', 'In Progress', 'Review', 'Completed'] as const).map((status) => <button type="button" key={status} className={taskStatusFilter === status ? 'active' : ''} onClick={() => setTaskStatusFilter(status)}><span className={`dock-avatar dock-${status.toLowerCase().replace(' ', '-')}`}>{statusCounts[status]}</span><span><strong>{status === 'Todo' ? 'Planning' : status === 'In Progress' ? 'Workspace' : status === 'Review' ? 'Review room' : 'Completed garden'}</strong><small>{status}</small></span></button>)}
-        </footer>
-      </section>
-
-      <div className="dashboard-insights-divider"><span>Workspace insights</span><i /></div>
       <section className="dashboard-hero">
         <div>
           <p className="eyebrow">{todayLabel}</p>

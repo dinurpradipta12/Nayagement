@@ -14,8 +14,6 @@
     "assets:office3d": "node scripts/generate-office-assets.mjs"
   },
   "dependencies": {
-    "@react-three/drei": "^9.122.0",
-    "@react-three/fiber": "^8.18.0",
     "@supabase/supabase-js": "^2.112.4",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
@@ -27,9 +25,9 @@
   "devDependencies": {
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "@types/three": "0.170.0",
     "@vitejs/plugin-react": "^4.3.4",
     "typescript": "^5.6.3",
-    "vite": "^6.0.1"
+    "vite": "^6.0.1",
+    "@types/three": "0.170.0"
   }
 }
